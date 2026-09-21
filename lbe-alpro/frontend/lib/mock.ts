@@ -592,11 +592,33 @@ const MOCK_TEAMS: Team[] = [
     maxMembers: null,
     createdAt: past(1),
   },
+  {
+    id: 3,
+    eventId: 1,
+    creatorId: 3,
+    title: "Tim Paper Riset AI",
+    description: "Mencari anggota untuk riset dan publikasi paper.",
+    contactInfo: "Hubungi @riset_ai",
+    maxMembers: 5,
+    createdAt: past(2),
+  },
+  {
+    id: 4,
+    eventId: 4,
+    creatorId: 3,
+    title: "Duo Oprec Schematics",
+    description: "Slot terakhir divisi acara.",
+    contactInfo: "Hubungi @duo_oprec",
+    maxMembers: 1,
+    createdAt: past(2),
+  },
 ];
 
 const MOCK_TEAM_MEMBERS: TeamMember[] = [
   { id: 1, teamId: 1, userId: 3, joinedAt: past(4) },
   { id: 2, teamId: 1, userId: 1, joinedAt: past(3) },
+  { id: 3, teamId: 3, userId: 3, joinedAt: past(2) },
+  { id: 4, teamId: 4, userId: 3, joinedAt: past(2) },
 ];
 
 function requireStudent() {
