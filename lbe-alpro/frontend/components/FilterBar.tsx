@@ -42,7 +42,7 @@ export default function FilterBar({ values, onChange }: FilterBarProps) {
   }, [query]);
 
   return (
-    <div className="grid gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 sm:grid-cols-2 lg:grid-cols-1">
       <div className="flex flex-col gap-1">
         <label htmlFor="filter-category" className="text-sm text-[var(--faint)]">
           Bidang

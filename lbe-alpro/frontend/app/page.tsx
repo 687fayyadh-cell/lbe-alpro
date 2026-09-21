@@ -147,14 +147,24 @@ function ExploreContent() {
           Semua peluang pengembangan diri ITS dalam satu pintu.
         </p>
       </div>
-      <FilterBar values={url} onChange={onFiltersChange} />
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+        <aside
+          aria-label="Filter event"
+          className="w-full shrink-0 lg:sticky lg:top-4 lg:w-60"
+        >
+          <h2 className="mb-3 text-sm font-semibold text-[var(--faint)]">
+            Filter
+          </h2>
+          <FilterBar values={url} onChange={onFiltersChange} />
+        </aside>
+        <div className="flex min-w-0 flex-1 flex-col gap-6">
       {state.status === "error" ? (
         <ErrorState
           message={state.error ?? "Gagal memuat event."}
           onRetry={() => setReloadKey((k) => k + 1)}
         />
       ) : state.status === "loading" ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {[0, 1, 2, 3, 4, 5].map((key) => (
             <EventCardSkeleton key={key} />
           ))}
@@ -166,7 +176,7 @@ function ExploreContent() {
         />
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {state.events.map((event) => (
               <EventCard key={event.id} event={event} />
             ))}
@@ -181,6 +191,8 @@ function ExploreContent() {
           ) : null}
         </>
       )}
+        </div>
+      </div>
     </main>
   );
 }
