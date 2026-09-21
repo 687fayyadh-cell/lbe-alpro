@@ -30,9 +30,9 @@ func NewEventHandler(eventService *service.EventService) *EventHandler {
 // @Param        q        query string false "Search keyword"
 // @Param        page     query int    false "Page number" default(1)
 // @Param        limit    query int    false "Items per page" default(10)
-// @Success      200  {object} response.BaseResponse{data=[]model.Event,meta=response.Meta}
-// @Failure      500  {object} response.ErrorResponse
-// @Router       /api/v1/events [get]
+// @Success      200  {object} map[string]interface{}
+// @Failure      500  {object} map[string]interface{}
+// @Router       /events [get]
 func (h *EventHandler) ListEvents(c *gin.Context) {
 	category := c.Query("category")
 	eventType := c.Query("type")
@@ -61,9 +61,9 @@ func (h *EventHandler) ListEvents(c *gin.Context) {
 // @Tags         events
 // @Produce      json
 // @Param        id   path int true "Event ID"
-// @Success      200  {object} response.BaseResponse{data=model.Event}
-// @Failure      404  {object} response.ErrorResponse
-// @Router       /api/v1/events/{id} [get]
+// @Success      200  {object} map[string]interface{}
+// @Failure      404  {object} map[string]interface{}
+// @Router       /events/{id} [get]
 func (h *EventHandler) GetEvent(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {

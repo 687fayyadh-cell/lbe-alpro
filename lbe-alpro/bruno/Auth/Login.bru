@@ -1,0 +1,24 @@
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body {
+  "email": "student@sinergiits.its.ac.id",
+  "password": "stu123"
+}
+
+script {
+  res = bru.response
+  if (res.status === 200) {
+    var data = res.body
+    if (data.success && data.data && data.data.token) {
+      bru.setVar("studentToken", data.data.token)
+    }
+  }
+}

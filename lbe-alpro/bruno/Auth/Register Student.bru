@@ -1,0 +1,16 @@
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body {
+  "name": "Mahasiswa Baru",
+  "email": "baru@sinergiits.its.ac.id",
+  "password": "baru123",
+  "department": "Teknik Informatika"
+}

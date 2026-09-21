@@ -13,8 +13,20 @@ import (
 	"backend/internal/service"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @title           SinergiITS API
+// @version         1.0
+// @description     Platform terpadu pengembangan diri mahasiswa ITS.
+// @host            localhost:8080
+// @BasePath        /api/v1
+// @schemes         http
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Masukkan "Bearer {token}"
 func main() {
 	cfg := config.Load()
 	cfg.Validate()
@@ -46,6 +58,8 @@ func main() {
 	router.Use(middleware.CORS(cfg.CORSOrigin))
 
 	// Health check
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"success": true,

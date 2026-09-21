@@ -27,10 +27,10 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 // @Accept       json
 // @Produce      json
 // @Param        body body dto.RegisterRequest true "Registration payload"
-// @Success      201  {object} response.BaseResponse{data=dto.UserResponse}
-// @Failure      400  {object} response.ErrorResponse
-// @Failure      409  {object} response.ErrorResponse
-// @Router       /api/v1/auth/register [post]
+// @Success      201  {object} map[string]interface{}
+// @Failure      400  {object} map[string]interface{}
+// @Failure      409  {object} map[string]interface{}
+// @Router       /auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req dto.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -61,10 +61,10 @@ func (h *AuthHandler) Register(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        body body dto.LoginRequest true "Login payload"
-// @Success      200  {object} response.BaseResponse{data=dto.LoginResponse}
-// @Failure      400  {object} response.ErrorResponse
-// @Failure      401  {object} response.ErrorResponse
-// @Router       /api/v1/auth/login [post]
+// @Success      200  {object} map[string]interface{}
+// @Failure      400  {object} map[string]interface{}
+// @Failure      401  {object} map[string]interface{}
+// @Router       /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req dto.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -87,9 +87,9 @@ func (h *AuthHandler) Login(c *gin.Context) {
 // @Tags         users
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200  {object} response.BaseResponse{data=dto.UserResponse}
-// @Failure      401  {object} response.ErrorResponse
-// @Router       /api/v1/users/me [get]
+// @Success      200  {object} map[string]interface{}
+// @Failure      401  {object} map[string]interface{}
+// @Router       /users/me [get]
 func (h *AuthHandler) GetMe(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -114,10 +114,10 @@ func (h *AuthHandler) GetMe(c *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        body body dto.UpdateProfileRequest true "Update payload"
-// @Success      200  {object} response.BaseResponse{data=dto.UserResponse}
-// @Failure      400  {object} response.ErrorResponse
-// @Failure      401  {object} response.ErrorResponse
-// @Router       /api/v1/users/me [put]
+// @Success      200  {object} map[string]interface{}
+// @Failure      400  {object} map[string]interface{}
+// @Failure      401  {object} map[string]interface{}
+// @Router       /users/me [put]
 func (h *AuthHandler) UpdateMe(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
