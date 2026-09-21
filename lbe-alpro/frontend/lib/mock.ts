@@ -253,6 +253,21 @@ export function mockGetEvents(
   });
 }
 
+export function mockGetMyRegistrations(
+  page = 1,
+  limit = 10,
+): Promise<Paginated<Registration>> {
+  const user = tokenToUser(getToken());
+  const mine = MOCK_REGISTRATIONS.filter((r) => r.userId === user.id);
+  const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const safePage = Math.max(page, 1);
+  const start = (safePage - 1) * safeLimit;
+  return Promise.resolve({
+    data: mine.slice(start, start + safeLimit),
+    meta: { page: safePage, limit: safeLimit, total: mine.length },
+  });
+}
+
 export function mockGetEvent(id: number): Promise<Event> {
   const event = MOCK_EVENTS.find((e) => e.id === id);
   if (!event) {
