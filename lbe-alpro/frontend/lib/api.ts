@@ -8,6 +8,7 @@ import {
   mockGetEvent,
   mockGetEvents,
   mockGetMe,
+  mockGetMyRegistrations,
   mockLogin,
   mockRegister,
   mockRegisterForEvent,
@@ -174,6 +175,16 @@ export async function registerToEvent(
   body: RegisterToEventRequest = {},
 ): Promise<Registration> {
   return registerForEvent(eventId, body);
+}
+
+export async function getMyRegistrations(
+  page = 1,
+  limit = 10,
+): Promise<Paginated<Registration>> {
+  if (isMockEnabled()) return mockGetMyRegistrations(page, limit);
+  return apiFetchPaginated<Registration>(
+    `/registrations/me?page=${page}&limit=${limit}`,
+  );
 }
 
 export async function registerForEvent(

@@ -2,7 +2,7 @@
 
 import type { Event } from "./types";
 
-export function formatDeadlineWib(iso: string): string {
+export function formatDateWib(iso: string): string {
   const formatted = new Intl.DateTimeFormat("id-ID", {
     day: "numeric",
     month: "short",
@@ -12,6 +12,10 @@ export function formatDeadlineWib(iso: string): string {
     timeZone: "Asia/Jakarta",
   }).format(new Date(iso));
   return `${formatted.replace(":", ".")} WIB`;
+}
+
+export function formatDeadlineWib(iso: string): string {
+  return formatDateWib(iso);
 }
 
 export function quotaPercent(current: number, quota: number): number {
