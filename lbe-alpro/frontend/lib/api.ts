@@ -7,6 +7,7 @@ import { getToken } from "./auth";
 import {
   mockCreateEvent,
   mockGetEvent,
+  mockGetEventRegistrants,
   mockGetEvents,
   mockGetMe,
   mockGetMyRegistrations,
@@ -15,6 +16,7 @@ import {
   mockRegister,
   mockRegisterForEvent,
   mockUpdateEvent,
+  mockUpdateRegistrationStatus,
 } from "./mock";
 import type {
   ApiErrorBody,
@@ -29,7 +31,9 @@ import type {
   PaginationMeta,
   RegisterRequest,
   RegisterToEventRequest,
+  Registrant,
   Registration,
+  RegistrationStatus,
   UpdateEventRequest,
   User,
 } from "./types";
@@ -213,6 +217,34 @@ export async function updateEvent(
 ): Promise<Event> {
   if (isMockEnabled()) return mockUpdateEvent(id, body);
   return apiFetch<Event>(`/events/${id}`, { method: "PUT", body });
+}
+
+function toRegistrant(item: Registrant | Registration): Registrant {
+  if ("registration" in item) return item;
+  return { registration: item, user: null };
+}
+
+export async function getEventRegistrants(
+  eventId: number,
+  page = 1,
+  limit = 10,
+): Promise<Paginated<Registrant>> {
+  if (isMockEnabled()) return mockGetEventRegistrants(eventId, page, limit);
+  const raw = await apiFetchPaginated<Registrant | Registration>(
+    `/events/${eventId}/registrants?page=${page}&limit=${limit}`,
+  );
+  return { data: raw.data.map(toRegistrant), meta: raw.meta };
+}
+
+export async function updateRegistrationStatus(
+  id: number,
+  status: Extract<RegistrationStatus, "approved" | "rejected">,
+): Promise<Registration> {
+  if (isMockEnabled()) return mockUpdateRegistrationStatus(id, status);
+  return apiFetch<Registration>(`/registrations/${id}/status`, {
+    method: "PUT",
+    body: { status },
+  });
 }
 
 export async function registerForEvent(
