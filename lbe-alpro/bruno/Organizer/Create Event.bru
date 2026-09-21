@@ -1,0 +1,19 @@
+post {
+  url: {{baseUrl}}/events
+  body: json
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{organizerToken}}
+  Content-Type: application/json
+}
+
+body {
+  "title": "Event Testing Baru",
+  "category": "minat_bakat",
+  "type": "lomba",
+  "description": "Ini adalah event untuk testing fitur create.",
+  "quota": 50,
+  "deadline": "2026-12-31T23:59:00Z"
+}

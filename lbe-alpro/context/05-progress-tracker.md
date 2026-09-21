@@ -1,18 +1,19 @@
 Current phase
 
-G1 Foundation + Auth — COMPLETE.
+G2 Registration flow — COMPLETE.
 
 Current goal
 
-G1 done. Ready for G2 (registration flow).
+G2 done. Ready for G3 (organizer, admin, teams, profile).
 
 In progress
-BE-11 (organizer event CRUD)
+(none)
 
 Completed
 K-00 baseline, K-01 repo scaffold, K-02 ERD/enums, K-03 contract v1, K-04 CORS, K-05 runbook,
 BE-01 bootstrap, BE-02 models, BE-03 response envelope, BE-04+BE-05 auth+middleware,
-BE-06 seed, BE-07 events read, BE-08 Swagger + Bruno
+BE-06 seed, BE-07 events read, BE-08 Swagger + Bruno,
+BE-09+10 registration flow, BE-11 organizer CRUD, BE-12+13 Bruno failures + Swagger
 
 Coming next
 
@@ -311,3 +312,8 @@ BE-05: internal/middleware/auth.go (AuthJWT, RequireRole)
 BE-06: internal/config/seed.go (admin, 2 organizers, 2 students, 15 events across 4 bidang + pending/rejected/past-deadline)
 BE-07: internal/repository/event_repository.go, internal/service/event_service.go, internal/handler/event_handler.go
 BE-08: cmd/server/main.go (swagger route, swagger annotations), docs/ (generated), bruno/ (Auth + Events folders, environment)
+BE-09: internal/repository/registration_repository.go, internal/service/registration_service.go (transaction + quota lock), internal/handler/registration_handler.go, internal/dto/auth.go (UpdateRegistrationStatusRequest)
+BE-10: GET /registrations/me (part of registration_handler.go)
+BE-11: internal/dto/event.go, internal/repository/event_repository.go (Create/Update/Delete/ListByOrganizer/ListRegistrants), internal/service/event_service.go, internal/handler/event_handler.go (CreateEvent/UpdateEvent/DeleteEvent/ListOrganizerEvents/ListRegistrants)
+BE-12: bruno/ (Register Duplicate, Login Wrong Password, Register No Token, Create Event, List My Events, List Pending Events)
+BE-13: docs/ regenerated with all endpoint annotations

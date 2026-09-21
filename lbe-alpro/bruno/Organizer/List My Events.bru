@@ -1,0 +1,13 @@
+get {
+  url: {{baseUrl}}/organizer/events
+  auth: bearer
+}
+
+headers {
+  Authorization: Bearer {{organizerToken}}
+}
+
+query {
+  page: 1
+  limit: 10
+}
