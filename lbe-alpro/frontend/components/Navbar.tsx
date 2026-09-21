@@ -23,7 +23,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
   }
 
   const linkClass = (href: string): string =>
-    `text-sm hover:text-[var(--text)] ${
+    `text-base hover:text-[var(--text)] ${
       isActive(href)
         ? "font-medium text-[var(--text)]"
         : "text-[var(--faint)]"
@@ -55,10 +55,10 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
   return (
     <header className="border-b border-[var(--border)] bg-[var(--surface)]">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="font-semibold">
+        <Link href="/" className="text-lg font-bold">
           SinergiITS
         </Link>
-        <nav aria-label="Navigasi utama" className="hidden items-center gap-4 md:flex">
+        <nav aria-label="Navigasi utama" className="hidden items-center gap-5 md:flex">
           {links.map((link) => (
             <Link
               key={link.href}
@@ -169,7 +169,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
                 href={link.href}
                 aria-current={isActive(link.href) ? "page" : undefined}
                 onClick={() => setMenuOpen(false)}
-                className={`rounded-md px-2 py-2 text-sm hover:bg-[var(--background)] ${
+                className={`rounded-md px-2 py-2 text-base hover:bg-[var(--background)] ${
                   isActive(link.href)
                     ? "font-medium text-[var(--text)]"
                     : ""
