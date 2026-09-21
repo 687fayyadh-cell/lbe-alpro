@@ -2,6 +2,7 @@
 frontend/node_modules/
 frontend/.next/
 frontend/out/
+frontend/.env.local
 
 # Backend build dan coverage
 backend/bin/
@@ -27,3 +28,6 @@ context/feature-specs/current-issues.md
 # OS
 .DS_Store
 Thumbs.db
+
+# Local AI working notes (may hold tokens)
+context/feature-specs/current-issues.md

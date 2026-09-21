@@ -29,8 +29,6 @@ context/03-ai-workflow-rules.md
 context/04-ui-context.md
 context/05-progress-tracker.md
 
-Then read the specific context/feature-specs/<nn>-*.md for the current unit, and the PRD.md sections it references.
-
 Rules
 Work on ONE feature spec at a time, in ONE layer (backend or frontend). Do not combine unrelated boundaries.
 Mark the unit in-progress in 05-progress-tracker.md before coding, completed after verification passes.

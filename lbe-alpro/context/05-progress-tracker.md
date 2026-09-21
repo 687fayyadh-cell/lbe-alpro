@@ -303,9 +303,11 @@ Session notes
 - Repo root: /Users/macbook/lbe-alpro (outer), nested lbe-alpro/ is canonical project root
 - PRD.md exists at outer root only, not nested (document gap)
 - Unrelated Ghost AI specs in context/feature-specs/ — untouched
+- G0 (branch fe/init-review): contract v1 frozen in docs/api-contract-v1.md; enums slugs (category snake_case, type +riset) with UI labels in frontend/lib/constants.ts; DTOs in frontend/lib/types.ts; auth skeletons frontend/lib/{api,auth}.ts (localStorage MVP, Bearer via apiFetch); runtime FE :3000 / BE :8080 / CORS_ORIGIN http://localhost:3000; .env.example replaced (Ghost AI vars removed); frontend pm = pnpm@11.24.0 (Node v24.21.0). Next.js bundled docs absent in Next 16 (node_modules/next/dist/docs missing) — used standard CLI for smoke. Open human decisions: Ghost AI feature-specs cleanup + outer-root PRD/konteks duplication (see docs/g0-kickoff.md).
 
 ## Completion log
 
+### Backend (be/repo-scaffold)
 BE-01: backend/go.mod (direct deps: gin, gorm, pgx, jwt), internal/config/config.go (Validate, ConnectDB), cmd/server/main.go (DB, AutoMigrate)
 BE-02: internal/model/types.go (enums), user.go, event.go, registration.go, team.go
 BE-03: internal/response/response.go (Success/Created/NoContent/Paginated/Error), errors.go (sentinel errors + HandleError)
@@ -319,3 +321,34 @@ BE-10: GET /registrations/me (part of registration_handler.go)
 BE-11: internal/dto/event.go, internal/repository/event_repository.go (Create/Update/Delete/ListByOrganizer/ListRegistrants), internal/service/event_service.go, internal/handler/event_handler.go (CreateEvent/UpdateEvent/DeleteEvent/ListOrganizerEvents/ListRegistrants)
 BE-12: bruno/ (Register Duplicate, Login Wrong Password, Register No Token, Create Event, List My Events, List Pending Events)
 BE-13: docs/ regenerated with all endpoint annotations
+BE-14: registrants table + approve/reject
+BE-15: admin moderation
+BE-16: admin users
+BE-17: teams
+BE-18: profile
+
+### Frontend (fe/g4-cleanup)
+G0: contract v1 frozen, enum matrix, auth skeletons, README draft
+FE-01: init Next.js structure, dark tokens, route placeholders
+FE-02: typed API client, envelope parsing, event/auth methods
+FE-03: mock adapter behind api client, contract-parity envelopes
+FE-04: reusable components, dark tokens, a11y states
+FE-05: login/register pages, auth provider, safe next redirect
+FE-06: role guard, settled-state redirects, 403 page
+FE-07: explore page, URL filters, app shell with navbar
+FE-08: event detail page, QuotaBar, role-aware register button
+FE-09: register modal, central error map, success refresh
+FE-10: my registrations page, guard, event-enriched cards
+FE-11: ui view-states, NotFoundState, shared 401 redirect
+FE-12: organizer dashboard mock, table, validated create/edit forms
+FE-13: organizer real-API paths, toast system, flash notices
+FE-14: registrants table, confirm modal, optimistic approve/reject
+FE-15: admin moderation queue, confirm modal, optimistic update
+FE-16: teams board, create dialog, join confirm (mock-backed)
+FE-17: profile page, backend-loaded, context sync on save
+FE-18: role-based navbar, user menu, guest teams link
+F-01: E2E support report, 52/52 flows, backend blockers
+F-02: mock default OFF, real API by default
+F-04: focus ring, table min-width, modal scroll on small screens
+F-06: frontend README standard, env table, mock, routes, troubleshooting
+F-07: cleanup svg artifacts, env ignore, demo runbook
