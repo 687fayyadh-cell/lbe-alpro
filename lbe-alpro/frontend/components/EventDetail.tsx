@@ -26,7 +26,7 @@ export default function EventDetail({ event, action }: EventDetailProps) {
       ) : (
         <div
           aria-hidden="true"
-          className="flex h-56 w-full items-center justify-center rounded-md bg-[var(--background)] text-sm text-[var(--faint)]"
+          className="flex h-24 w-full items-center justify-center rounded-md bg-[var(--background)] text-sm text-[var(--faint)]"
         >
           Tanpa poster
         </div>
@@ -48,9 +48,7 @@ export default function EventDetail({ event, action }: EventDetailProps) {
           <StatusBadge label={availability.label} tone={availabilityTone} />
         </div>
         <h1 className="mt-3 text-2xl font-semibold">{event.title}</h1>
-        <p className="mt-1 text-sm text-[var(--faint)]">
-          Penyelenggara ID {event.organizerId}
-        </p>
+        <p className="mt-1 text-sm text-[var(--faint)]">Penyelenggara</p>
       </div>
       <p className="text-sm leading-relaxed">{event.description}</p>
       <dl className="grid gap-3 text-sm sm:grid-cols-2">

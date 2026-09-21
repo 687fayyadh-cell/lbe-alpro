@@ -94,11 +94,12 @@ export default function EventDetailPage() {
           <button
             type="button"
             disabled
+            aria-describedby="register-reason"
             className="rounded-md bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white disabled:opacity-40"
           >
             Daftar Sekarang
           </button>
-          <p className="mt-2 text-sm text-[var(--faint)]">
+          <p id="register-reason" className="mt-2 text-sm text-[var(--faint)]">
             Hanya mahasiswa yang dapat mendaftar event.
           </p>
         </div>
@@ -111,11 +112,12 @@ export default function EventDetailPage() {
           <button
             type="button"
             disabled
+            aria-describedby="register-reason"
             className="rounded-md bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white disabled:opacity-40"
           >
             Daftar Sekarang
           </button>
-          <p className="mt-2 text-sm text-[var(--faint)]">
+          <p id="register-reason" className="mt-2 text-sm text-[var(--faint)]">
             {availability.key === "full"
               ? "Kuota pendaftaran sudah penuh."
               : "Pendaftaran sudah ditutup."}

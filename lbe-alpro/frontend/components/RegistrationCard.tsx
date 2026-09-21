@@ -61,7 +61,7 @@ export default function RegistrationCard({
       {event ? (
         <Link
           href={`/events/${event.id}`}
-          className="mt-3 inline-block text-sm underline"
+          className="mt-3 inline-block py-1 text-sm underline"
         >
           Lihat detail event
         </Link>

@@ -31,6 +31,7 @@ type QueueState =
 type PendingAction = {
   id: number;
   status: Extract<EventStatus, "published" | "rejected">;
+  title: string;
 } | null;
 
 const STATUS_FILTERS: { value: EventStatus; label: string }[] = [
@@ -167,7 +168,7 @@ function ModerationContent() {
                   >
                     <td className="px-4 py-3 font-medium">{event.title}</td>
                     <td className="px-4 py-3 text-[var(--faint)]">
-                      Penyelenggara #{event.organizerId}
+                      Penyelenggara
                     </td>
                     <td className="px-4 py-3">
                       <span className="flex flex-wrap gap-1">
@@ -200,9 +201,13 @@ function ModerationContent() {
                             type="button"
                             disabled={busy}
                             onClick={() =>
-                              setConfirm({ id: event.id, status: "published" })
+                              setConfirm({
+                                id: event.id,
+                                status: "published",
+                                title: event.title,
+                              })
                             }
-                            className="underline disabled:opacity-40"
+                            className="py-1 underline disabled:opacity-40"
                           >
                             Setujui
                           </button>
@@ -210,9 +215,13 @@ function ModerationContent() {
                             type="button"
                             disabled={busy}
                             onClick={() =>
-                              setConfirm({ id: event.id, status: "rejected" })
+                              setConfirm({
+                                id: event.id,
+                                status: "rejected",
+                                title: event.title,
+                              })
                             }
-                            className="underline disabled:opacity-40"
+                            className="py-1 underline disabled:opacity-40"
                           >
                             Tolak
                           </button>
@@ -231,7 +240,11 @@ function ModerationContent() {
       <Modal
         open={confirm !== null}
         onClose={() => setConfirm(null)}
-        title={confirm?.status === "published" ? "Setujui event?" : "Tolak event?"}
+        title={
+          confirm?.status === "published"
+            ? `Setujui "${confirm?.title ?? ""}"?`
+            : `Tolak "${confirm?.title ?? ""}"?`
+        }
         description={
           confirm?.status === "published"
             ? "Event akan tayang publik."

@@ -75,13 +75,13 @@ export default function OrganizerEventTable({
                 <span className="flex gap-3">
                   <Link
                     href={`/events/${event.id}`}
-                    className="underline"
+                    className="inline-block py-1 underline"
                   >
                     Lihat
                   </Link>
                   <Link
                     href={`/organizer/events/${event.id}/edit`}
-                    className="underline"
+                    className="inline-block py-1 underline"
                   >
                     Ubah
                   </Link>
