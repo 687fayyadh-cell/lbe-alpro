@@ -32,10 +32,15 @@ func main() {
 	}
 	log.Println("AutoMigrate completed successfully.")
 
+	config.Seed(db)
+
 	// Wire dependencies
 	userRepo := repository.NewUserRepository(db)
+	eventRepo := repository.NewEventRepository(db)
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret, cfg.JWTExpiresHours)
+	eventService := service.NewEventService(eventRepo)
 	authHandler := handler.NewAuthHandler(authService)
+	eventHandler := handler.NewEventHandler(eventService)
 
 	router := gin.Default()
 	router.Use(middleware.CORS(cfg.CORSOrigin))
@@ -55,12 +60,8 @@ func main() {
 		// Public routes
 		v1.POST("/auth/register", authHandler.Register)
 		v1.POST("/auth/login", authHandler.Login)
-		v1.GET("/events", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: events list", "data": []interface{}{}})
-		})
-		v1.GET("/events/:id", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: event detail", "data": nil})
-		})
+		v1.GET("/events", eventHandler.ListEvents)
+		v1.GET("/events/:id", eventHandler.GetEvent)
 		v1.GET("/teams", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: teams list", "data": []interface{}{}})
 		})

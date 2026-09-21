@@ -7,7 +7,7 @@ Current goal
 G0 done. Ready for BE-01 (backend bootstrap).
 
 In progress
-BE-04 + BE-05 (auth + middleware)
+BE-06 (seed), BE-07 (events read)
 Completed
 K-00 baseline, K-01 repo scaffold, K-02 ERD/enums, K-03 contract v1, K-04 CORS, K-05 runbook
 
