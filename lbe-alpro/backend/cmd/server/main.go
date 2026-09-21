@@ -10,6 +10,7 @@ import (
 
 	"backend/internal/config"
 	"backend/internal/middleware"
+	"backend/internal/model"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,9 +21,16 @@ func main() {
 
 	db := cfg.ConnectDB()
 
-	// AutoMigrate will be populated as models are added (BE-02).
-	// Example: db.AutoMigrate(&model.User{}, &model.Event{}, ...)
-	_ = db
+	if err := db.AutoMigrate(
+		&model.User{},
+		&model.Event{},
+		&model.Registration{},
+		&model.Team{},
+		&model.TeamMember{},
+	); err != nil {
+		log.Fatalf("FATAL: auto-migration failed: %v", err)
+	}
+	log.Println("AutoMigrate completed successfully.")
 
 	router := gin.Default()
 	router.Use(middleware.CORS(cfg.CORSOrigin))
