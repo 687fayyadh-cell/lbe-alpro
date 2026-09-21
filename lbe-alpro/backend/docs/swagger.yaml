@@ -1,5 +1,50 @@
 basePath: /api/v1
 definitions:
+  dto.CreateEventRequest:
+    properties:
+      category:
+        enum:
+        - minat_bakat
+        - kewirausahaan
+        - manajerial
+        - keilmiahan
+        type: string
+      deadline:
+        type: string
+      description:
+        minLength: 10
+        type: string
+      end_date:
+        type: string
+      poster_url:
+        type: string
+      quota:
+        minimum: 1
+        type: integer
+      start_date:
+        type: string
+      title:
+        maxLength: 255
+        minLength: 3
+        type: string
+      type:
+        enum:
+        - lomba
+        - bootcamp
+        - oprec
+        - workshop
+        - funmatch
+        - bazar
+        - riset
+        type: string
+    required:
+    - category
+    - deadline
+    - description
+    - quota
+    - title
+    - type
+    type: object
   dto.LoginRequest:
     properties:
       email:
@@ -29,6 +74,44 @@ definitions:
     - email
     - name
     - password
+    type: object
+  dto.UpdateEventRequest:
+    properties:
+      category:
+        enum:
+        - minat_bakat
+        - kewirausahaan
+        - manajerial
+        - keilmiahan
+        type: string
+      deadline:
+        type: string
+      description:
+        minLength: 10
+        type: string
+      end_date:
+        type: string
+      poster_url:
+        type: string
+      quota:
+        minimum: 1
+        type: integer
+      start_date:
+        type: string
+      title:
+        maxLength: 255
+        minLength: 3
+        type: string
+      type:
+        enum:
+        - lomba
+        - bootcamp
+        - oprec
+        - workshop
+        - funmatch
+        - bazar
+        - riset
+        type: string
     type: object
   dto.UpdateProfileRequest:
     properties:
@@ -172,7 +255,79 @@ paths:
       summary: List published events
       tags:
       - events
+    post:
+      consumes:
+      - application/json
+      description: Create a new event (organizer/admin only). Status forced to pending.
+      parameters:
+      - description: Event payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateEventRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create event
+      tags:
+      - events
   /events/{id}:
+    delete:
+      description: Delete an event (owner organizer/admin only)
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete event
+      tags:
+      - events
     get:
       description: Get a published event by ID
       parameters:
@@ -195,6 +350,55 @@ paths:
             additionalProperties: true
             type: object
       summary: Get event detail
+      tags:
+      - events
+    put:
+      consumes:
+      - application/json
+      description: Update an event (owner organizer/admin only)
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateEventRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update event
       tags:
       - events
   /events/{id}/register:
@@ -239,6 +443,75 @@ paths:
       summary: Register to event
       tags:
       - registrations
+  /events/{id}/registrants:
+    get:
+      description: Get all registrants for an event (owner organizer/admin only)
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List event registrants
+      tags:
+      - organizer
+  /organizer/events:
+    get:
+      description: Get all events for the current organizer
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List organizer events
+      tags:
+      - organizer
   /registrations/{id}/status:
     put:
       consumes:

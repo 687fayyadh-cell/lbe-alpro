@@ -108,21 +108,11 @@ func main() {
 			organizer := auth.Group("")
 			organizer.Use(middleware.RequireRole(model.RoleOrganizer, model.RoleAdmin))
 			{
-				organizer.POST("/events", func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: create event"})
-				})
-				organizer.PUT("/events/:id", func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: update event"})
-				})
-				organizer.DELETE("/events/:id", func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: delete event"})
-				})
-				organizer.GET("/organizer/events", func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: my events", "data": []interface{}{}})
-				})
-				organizer.GET("/events/:id/registrants", func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: event registrants", "data": []interface{}{}})
-				})
+				organizer.POST("/events", eventHandler.CreateEvent)
+				organizer.PUT("/events/:id", eventHandler.UpdateEvent)
+				organizer.DELETE("/events/:id", eventHandler.DeleteEvent)
+				organizer.GET("/organizer/events", eventHandler.ListOrganizerEvents)
+				organizer.GET("/events/:id/registrants", eventHandler.ListRegistrants)
 				organizer.PUT("/registrations/:id/status", regHandler.UpdateRegistrationStatus)
 			}
 

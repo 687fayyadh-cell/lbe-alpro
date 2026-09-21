@@ -7,7 +7,7 @@ Current goal
 G1 done. Ready for G2 (registration flow).
 
 In progress
-BE-09 (registration flow)
+BE-11 (organizer event CRUD)
 
 Completed
 K-00 baseline, K-01 repo scaffold, K-02 ERD/enums, K-03 contract v1, K-04 CORS, K-05 runbook,
