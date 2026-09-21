@@ -1,20 +1,21 @@
 Current phase
 
-G3 Organizer, Admin, Teams — COMPLETE.
+G4 Integration & Submission — COMPLETE.
 
 Current goal
 
-G3 done. Ready for G4 (integration & submission).
+All backend tasks done. Ready for submission.
 
 In progress
-F-03 (Swagger + Bruno), F-05 (security), F-06 (README)
+(none)
 
 Completed
 K-00 baseline, K-01 repo scaffold, K-02 ERD/enums, K-03 contract v1, K-04 CORS, K-05 runbook,
 BE-01 bootstrap, BE-02 models, BE-03 response envelope, BE-04+BE-05 auth+middleware,
 BE-06 seed, BE-07 events read, BE-08 Swagger + Bruno,
 BE-09+10 registration flow, BE-11 organizer CRUD, BE-12+13 Bruno failures + Swagger,
-BE-14 registrants, BE-15 admin moderation, BE-16 admin users, BE-17 teams, BE-18 profile
+BE-14 registrants, BE-15 admin moderation, BE-16 admin users, BE-17 teams, BE-18 profile,
+F-03 Swagger audit, F-05 security pass, F-06 README
 
 Coming next
 
