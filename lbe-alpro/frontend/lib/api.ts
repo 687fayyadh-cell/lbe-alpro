@@ -6,6 +6,7 @@
 import { getToken } from "./auth";
 import {
   mockCreateEvent,
+  mockCreateTeam,
   mockGetEvent,
   mockGetEventRegistrants,
   mockGetEvents,
@@ -13,6 +14,8 @@ import {
   mockGetModerationEvents,
   mockGetMyRegistrations,
   mockGetOrganizerEvents,
+  mockGetTeams,
+  mockJoinTeam,
   mockLogin,
   mockRegister,
   mockRegisterForEvent,
@@ -25,6 +28,7 @@ import type {
   ApiResponse,
   AuthResponse,
   CreateEventRequest,
+  CreateTeamRequest,
   Event,
   EventFilters,
   EventStatus,
@@ -37,6 +41,8 @@ import type {
   Registrant,
   Registration,
   RegistrationStatus,
+  Team,
+  TeamMember,
   UpdateEventRequest,
   User,
 } from "./types";
@@ -270,6 +276,29 @@ export async function updateModerationStatus(
     method: "PUT",
     body: { status },
   });
+}
+
+export async function getTeams(
+  eventId?: number,
+  page = 1,
+  limit = 10,
+): Promise<Paginated<Team>> {
+  if (isMockEnabled()) return mockGetTeams(eventId, page, limit);
+  const params = new URLSearchParams();
+  if (eventId !== undefined) params.set("event_id", String(eventId));
+  params.set("page", String(page));
+  params.set("limit", String(limit));
+  return apiFetchPaginated<Team>(`/teams?${params.toString()}`);
+}
+
+export async function createTeam(body: CreateTeamRequest): Promise<Team> {
+  if (isMockEnabled()) return mockCreateTeam(body);
+  return apiFetch<Team>("/teams", { method: "POST", body });
+}
+
+export async function joinTeam(teamId: number): Promise<TeamMember> {
+  if (isMockEnabled()) return mockJoinTeam(teamId);
+  return apiFetch<TeamMember>(`/teams/${teamId}/join`, { method: "POST" });
 }
 
 export async function registerForEvent(

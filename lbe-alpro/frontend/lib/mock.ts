@@ -8,6 +8,7 @@ import { CATEGORY_META, EVENT_TYPE_META } from "./constants";
 import type {
   AuthResponse,
   CreateEventRequest,
+  CreateTeamRequest,
   Event,
   EventFilters,
   EventStatus,
@@ -17,6 +18,8 @@ import type {
   RegisterToEventRequest,
   Registrant,
   Registration,
+  Team,
+  TeamMember,
   UpdateEventRequest,
   User,
 } from "./types";
@@ -566,4 +569,113 @@ export function mockUpdateModerationStatus(
   event.status = status;
   event.updatedAt = new Date().toISOString();
   return Promise.resolve(event);
+}
+
+const MOCK_TEAMS: Team[] = [
+  {
+    id: 1,
+    eventId: 1,
+    creatorId: 3,
+    title: "Tim Robotika ITS",
+    description: "Mencari 2 anggota divisi mekanik untuk lomba robotika.",
+    contactInfo: "Hubungi @robotika_its",
+    maxMembers: 4,
+    createdAt: past(4),
+  },
+  {
+    id: 2,
+    eventId: 2,
+    creatorId: 1,
+    title: "Sparing Futsal Sore Ini",
+    description: "Butuh 1 kiper untuk funmatch antar departemen.",
+    contactInfo: "Hubungi @futsal_sore",
+    maxMembers: null,
+    createdAt: past(1),
+  },
+];
+
+const MOCK_TEAM_MEMBERS: TeamMember[] = [
+  { id: 1, teamId: 1, userId: 3, joinedAt: past(4) },
+  { id: 2, teamId: 1, userId: 1, joinedAt: past(3) },
+];
+
+function requireStudent() {
+  const user = tokenToUser(getToken());
+  if (user.role !== "student") {
+    throw new ApiError(
+      "FORBIDDEN",
+      "Hanya mahasiswa yang dapat mengakses fitur ini.",
+      403,
+    );
+  }
+  return user;
+}
+
+export function mockGetTeams(
+  eventId: number | undefined,
+  page = 1,
+  limit = 10,
+): Promise<Paginated<Team>> {
+  const filtered = eventId
+    ? MOCK_TEAMS.filter((t) => t.eventId === eventId)
+    : [...MOCK_TEAMS];
+  const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const safePage = Math.max(page, 1);
+  const start = (safePage - 1) * safeLimit;
+  return Promise.resolve({
+    data: filtered.slice(start, start + safeLimit),
+    meta: { page: safePage, limit: safeLimit, total: filtered.length },
+  });
+}
+
+export function mockCreateTeam(body: CreateTeamRequest): Promise<Team> {
+  const user = requireStudent();
+  const event = MOCK_EVENTS.find((e) => e.id === body.eventId);
+  if (!event) {
+    throw new ApiError("NOT_FOUND", "Event tidak ditemukan.", 404);
+  }
+  if (!body.title.trim() || !body.description.trim() || !body.contactInfo.trim()) {
+    throw new ApiError("VALIDATION_ERROR", "Judul, deskripsi, dan kontak wajib diisi.", 400);
+  }
+  const id = Math.max(...MOCK_TEAMS.map((t) => t.id)) + 1;
+  const timestamp = new Date().toISOString();
+  const team: Team = {
+    id,
+    eventId: body.eventId,
+    creatorId: user.id,
+    title: body.title.trim(),
+    description: body.description.trim(),
+    contactInfo: body.contactInfo.trim(),
+    maxMembers: body.maxMembers ?? null,
+    createdAt: timestamp,
+  };
+  MOCK_TEAMS.push(team);
+  MOCK_TEAM_MEMBERS.push({ id: MOCK_TEAM_MEMBERS.length + 1, teamId: id, userId: user.id, joinedAt: timestamp });
+  return Promise.resolve(team);
+}
+
+export function mockJoinTeam(teamId: number): Promise<TeamMember> {
+  const user = requireStudent();
+  const team = MOCK_TEAMS.find((t) => t.id === teamId);
+  if (!team) {
+    throw new ApiError("NOT_FOUND", "Post pencarian tim tidak ditemukan.", 404);
+  }
+  if (team.creatorId === user.id) {
+    throw new ApiError("VALIDATION_ERROR", "Anda pembuat post ini.", 400);
+  }
+  if (MOCK_TEAM_MEMBERS.some((m) => m.teamId === teamId && m.userId === user.id)) {
+    throw new ApiError("ALREADY_REGISTERED", "Anda sudah bergabung di tim ini.", 409);
+  }
+  const count = MOCK_TEAM_MEMBERS.filter((m) => m.teamId === teamId).length;
+  if (team.maxMembers !== null && count >= team.maxMembers) {
+    throw new ApiError("EVENT_QUOTA_FULL", "Tim ini sudah penuh.", 422);
+  }
+  const member: TeamMember = {
+    id: MOCK_TEAM_MEMBERS.length + 1,
+    teamId,
+    userId: user.id,
+    joinedAt: new Date().toISOString(),
+  };
+  MOCK_TEAM_MEMBERS.push(member);
+  return Promise.resolve(member);
 }
