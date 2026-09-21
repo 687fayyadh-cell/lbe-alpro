@@ -19,6 +19,7 @@ import {
   mockLogin,
   mockRegister,
   mockRegisterForEvent,
+  mockUpdateCurrentUser,
   mockUpdateEvent,
   mockUpdateModerationStatus,
   mockUpdateRegistrationStatus,
@@ -44,6 +45,7 @@ import type {
   Team,
   TeamMember,
   UpdateEventRequest,
+  UpdateProfileRequest,
   User,
 } from "./types";
 import { ApiError } from "./types";
@@ -299,6 +301,17 @@ export async function createTeam(body: CreateTeamRequest): Promise<Team> {
 export async function joinTeam(teamId: number): Promise<TeamMember> {
   if (isMockEnabled()) return mockJoinTeam(teamId);
   return apiFetch<TeamMember>(`/teams/${teamId}/join`, { method: "POST" });
+}
+
+export async function getCurrentUser(): Promise<User> {
+  return getMe();
+}
+
+export async function updateCurrentUser(
+  body: UpdateProfileRequest,
+): Promise<User> {
+  if (isMockEnabled()) return mockUpdateCurrentUser(body);
+  return apiFetch<User>("/users/me", { method: "PUT", body });
 }
 
 export async function registerForEvent(
