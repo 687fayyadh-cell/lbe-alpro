@@ -1,15 +1,16 @@
 Current phase
 
-none — PRD and context files written; repo not yet scaffolded.
+G0 Kickoff — COMPLETE.
 
 Current goal
 
-TBD — start at feature-specs/01-repo-scaffold.md.
+G0 done. Ready for BE-01 (backend bootstrap).
 
 In progress
 (none)
 Completed
-(none)
+K-00 baseline, K-01 repo scaffold, K-02 ERD/enums, K-03 contract v1, K-04 CORS, K-05 runbook
+
 Coming next
 
 Phase A — Backend foundation (PRD week 1) 01 repo-scaffold [M] → 02 backend-bootstrap [M] → 03 db-models [M] → 04 auth-api [M] → 05 rbac-middleware [M]
@@ -37,19 +38,262 @@ Swagger UI at /swagger/index.html.
 
 Append one line per completed unit, e.g. F03: GORM models User/Event/Registration/Team in internal/model, AutoMigrate in internal/config/database.go.
 
+## K-02 — ERD and enum freeze (frozen)
+
+### Tables
+
+**users**
+| Column | Type | Constraints |
+|---|---|---|
+| id | uint PK | auto-increment |
+| name | varchar(255) | NOT NULL |
+| email | varchar(255) | NOT NULL, UNIQUE |
+| password_hash | varchar(255) | NOT NULL |
+| role | varchar(20) | NOT NULL, DEFAULT 'student' |
+| department | varchar(100) | nullable |
+| bio | text | nullable |
+| created_at | timestamptz | NOT NULL |
+| updated_at | timestamptz | NOT NULL |
+
+**events**
+| Column | Type | Constraints |
+|---|---|---|
+| id | uint PK | auto-increment |
+| organizer_id | uint FK→users.id | NOT NULL, INDEX |
+| title | varchar(255) | NOT NULL |
+| category | varchar(50) | NOT NULL |
+| type | varchar(50) | NOT NULL |
+| description | text | NOT NULL |
+| poster_url | varchar(500) | nullable |
+| quota | integer | NOT NULL, CHECK > 0 |
+| current_participants | integer | NOT NULL, DEFAULT 0 |
+| deadline | timestamptz | NOT NULL |
+| start_date | timestamptz | nullable |
+| end_date | timestamptz | nullable |
+| status | varchar(20) | NOT NULL, DEFAULT 'pending' |
+| created_at | timestamptz | NOT NULL |
+| updated_at | timestamptz | NOT NULL |
+
+Indexes: INDEX(category), INDEX(type), INDEX(status), INDEX(organizer_id).
+
+**registrations**
+| Column | Type | Constraints |
+|---|---|---|
+| id | uint PK | auto-increment |
+| event_id | uint FK→events.id | NOT NULL |
+| user_id | uint FK→users.id | NOT NULL |
+| answer | text | nullable |
+| attachment_url | varchar(500) | nullable |
+| status | varchar(20) | NOT NULL, DEFAULT 'pending' |
+| registered_at | timestamptz | NOT NULL |
+
+UNIQUE composite index: (event_id, user_id).
+
+**teams**
+| Column | Type | Constraints |
+|---|---|---|
+| id | uint PK | auto-increment |
+| event_id | uint FK→events.id | NOT NULL |
+| creator_id | uint FK→users.id | NOT NULL |
+| title | varchar(255) | NOT NULL |
+| description | text | nullable |
+| contact_info | varchar(255) | NOT NULL |
+| max_members | integer | nullable, CHECK > 0 if set |
+| created_at | timestamptz | NOT NULL |
+
+**team_members**
+| Column | Type | Constraints |
+|---|---|---|
+| id | uint PK | auto-increment |
+| team_id | uint FK→teams.id | NOT NULL, ON DELETE CASCADE |
+| user_id | uint FK→users.id | NOT NULL |
+| joined_at | timestamptz | NOT NULL |
+
+UNIQUE composite index: (team_id, user_id).
+
+### Enums (frozen)
+
+Storage: varchar + Go typed constants + DTO validation. No PostgreSQL native enums.
+
+**roles**: student, organizer, admin
+**categories**: minat_bakat, kewirausahaan, manajerial, keilmiahan
+**types**: lomba, bootcamp, oprec, workshop, funmatch, bazar, riset
+**event statuses**: pending, published, rejected
+**registration statuses**: pending, approved, rejected
+
+Display labels (Indonesian, UI-only):
+- roles: Mahasiswa, Penyelenggara, Admin
+- categories: Minat Bakat, Kewirausahaan, Manajerial, Keilmiahan
+- types: Lomba, Bootcamp, Oprec, Workshop, Funmatch, Bazar, Riset
+- event statuses: Menunggu, Dipublikasikan, Ditolak
+- registration statuses: Menunggu, Diterima, Ditolak
+
+## K-03 — Contract v1 (frozen)
+
+### Base prefix
+`/api/v1`
+
+### All routes (frozen)
+
+| Method | Path | Auth | Role |
+|---|---|---|---|
+| POST | /auth/register | Public | — |
+| POST | /auth/login | Public | — |
+| GET | /users/me | Bearer | any |
+| PUT | /users/me | Bearer | any |
+| GET | /events | Public | — |
+| GET | /events/:id | Public | — |
+| POST | /events | Bearer | organizer, admin |
+| PUT | /events/:id | Bearer | owner organizer / admin |
+| DELETE | /events/:id | Bearer | owner organizer / admin |
+| GET | /organizer/events | Bearer | organizer, admin |
+| POST | /events/:id/register | Bearer | student |
+| GET | /registrations/me | Bearer | any |
+| GET | /events/:id/registrants | Bearer | owner organizer / admin |
+| PUT | /registrations/:id/status | Bearer | owner organizer / admin |
+| GET | /teams | Public | — |
+| POST | /teams | Bearer | student |
+| POST | /teams/:id/join | Bearer | student |
+| GET | /admin/events | Bearer | admin |
+| PUT | /admin/events/:id/status | Bearer | admin |
+| GET | /admin/users | Bearer | admin |
+| PUT | /admin/users/:id/role | Bearer | admin |
+
+### Envelopes (frozen)
+
+Success:
+```json
+{ "success": true, "message": "Berhasil ...", "data": {} }
+```
+
+List success:
+```json
+{ "success": true, "message": "...", "data": [], "meta": { "page": 1, "limit": 10, "total": 42 } }
+```
+
+Error:
+```json
+{ "success": false, "error": { "code": "ERROR_CODE", "message": "..." } }
+```
+
+### Pagination defaults (frozen)
+- page: default 1
+- limit: default 10, max 50
+
+### HTTP status codes (frozen)
+- 200: read/update success
+- 201: create success
+- 204: delete (no body)
+- 400: validation error
+- 401: missing/invalid/expired token
+- 403: wrong role / not owner
+- 404: resource not found
+- 409: conflict (duplicate)
+- 422: business rule violation
+- 500: unexpected error
+
+### Standard error codes (frozen)
+- VALIDATION_ERROR (400)
+- UNAUTHORIZED (401)
+- FORBIDDEN (403)
+- NOT_FOUND (404)
+- EMAIL_TAKEN (409)
+- ALREADY_REGISTERED (409)
+- EVENT_QUOTA_FULL (422)
+- EVENT_DEADLINE_PASSED (422)
+- EVENT_NOT_PUBLISHED (422)
+- INTERNAL_ERROR (500)
+
+### Query params for GET /events (frozen)
+- category: string (optional)
+- type: string (optional)
+- status: "open" | "closed" (optional, derived: open = deadline >= now AND current_participants < quota)
+- q: string (optional, keyword search on title/description)
+- page: int (default 1)
+- limit: int (default 10, max 50)
+
+### Quota accounting decision (frozen)
+- Register: increment current_participants.
+- Reject (pending→rejected): decrement current_participants.
+- Approve (pending→approved): no change to current_participants.
+
+## K-04 — Runtime/CORS (frozen)
+
+- PORT=8080
+- CORS_ORIGIN=http://localhost:3000
+- Authentication: Bearer JWT header
+- CORS middleware implemented: allow origin from env, methods GET/POST/PUT/DELETE/OPTIONS, headers Authorization/Content-Type, OPTIONS preflight returns 204.
+- No JWT middleware yet (arrives BE-05).
+
+## K-05 — Local PostgreSQL runbook
+
+### Prerequisites
+- Go 1.26+ installed
+- PostgreSQL 14+ installed and running
+- psql available in PATH
+
+### Steps
+
+1. **Create database:**
+   ```bash
+   createdb -U postgres sinergiits
+   ```
+   Or via psql:
+   ```sql
+   CREATE DATABASE sinergiits;
+   ```
+
+2. **Create .env:**
+   ```bash
+   cp .env.example .env
+   ```
+   Edit .env and set DB_PASSWORD to your local PostgreSQL password.
+
+3. **Start backend:**
+   ```bash
+   cd lbe-alpro/backend
+   go run ./cmd/server
+   ```
+   Server starts on :8080. AutoMigrate creates tables on startup (BE-01).
+
+4. **Verify connection:**
+   ```bash
+   curl http://localhost:8080/health
+   # {"success":true,"message":"OK","data":{"status":"up"}}
+   ```
+
+5. **Start frontend (after FE-01):**
+   ```bash
+   cd lbe-alpro/frontend
+   npm run dev
+   ```
+   Frontend starts on :3000, connects to backend via NEXT_PUBLIC_API_URL.
+
+### Seed accounts (BE-06)
+| Email | Password | Role |
+|---|---|---|
+| admin@sinergiits ITS.ac.id | admin123 | admin |
+| organizer@sinergiits ITS.ac.id | org123 | organizer |
+| student@sinergiits ITS.ac.id | stu123 | student |
+
 Open decisions / PRD gaps
 
 Resolve each in the relevant spec (and amend PRD.md) before that unit is implemented. Proposed answers are suggestions, not decisions.
 
- UC-05 join team has no endpoint or table. Proposed: team_members(team_id, user_id) with a unique composite index + POST /api/v1/teams/{id}/join. Needed by units 17–18.
- UC-09 / UC-10 admin endpoints missing. Proposed: GET /api/v1/admin/events?status=pending, PUT /api/v1/admin/events/{id}/status, GET /api/v1/admin/users, PUT /api/v1/admin/users/{id}/role. Needed by units 14 and 16.
- Who becomes an organizer? Proposed: register always creates a student; only an admin promotes to organizer. Admin account comes from a seed.
- Registration form answers. The user flow mentions short answers / file link but registrations has no such column. Proposed: nullable answer (TEXT) + attachment_url (VARCHAR). Needed by units 08 and 12.
- Event dates. The organizer flow lists start/end date, but events only has deadline. Proposed: add start_date, end_date. Needed by units 03, 07, 15.
- Quota accounting. Proposed: increment current_participants on registration; decrement if the organizer later rejects it. Confirm in unit 08.
- Event DELETE. The assignment brief's example CRUD includes it; the PRD table does not. Proposed: skip for MVP, or soft delete by organizer-owner.
- ENUM columns. GORM AutoMigrate will not create native PostgreSQL enums. Proposed: varchar + CHECK constraint + Go-side validation.
- Frontend token storage. Proposed: localStorage + auth context with client-side route guards. Confirm in unit 10 (weigh XSS risk against the extra complexity of httpOnly cookies).
- Home route. PRD lists / as both landing and Explore. Decided in 04-ui-context.md: / is Explore, no marketing landing.
+ DECIDED (K-02): UC-05 — team_members table + POST /teams/{id}/join included.
+ DECIDED (K-02): UC-09/10 — admin endpoints included in contract v1.
+ DECIDED (K-02): Organizer promotion — register always creates student; admin promotes via PUT /admin/users/:id/role.
+ DECIDED (K-02): Registration answers — nullable answer (TEXT) + attachment_url (VARCHAR) included.
+ DECIDED (K-02): Event dates — start_date, end_date included (nullable).
+ DECIDED (K-03): Quota accounting — increment on register, decrement on reject.
+ OPEN: Event DELETE — hard delete by owner/admin (included in contract). Decide at BE-11d.
+ OPEN: Frontend token storage — localStorage proposed. Confirm at FE-10.
+ DECIDED: Home route — / is Explore, no landing page (04-ui-context.md).
 Session notes
-(versions, gotchas: e.g. Go version, Next.js version, swag init must be re-run after any annotation change, CORS must allow the frontend origin (http://localhost:3000) on the backend, Gin JSON binding errors need mapping to the standard error envelope)
+- Go 1.26.1, Gin v1.12.0, GORM v1.31.2
+- swag init must be re-run after any annotation change
+- CORS must allow frontend origin (http://localhost:3000)
+- Gin JSON binding errors need mapping to standard error envelope
+- Repo root: /Users/macbook/lbe-alpro (outer), nested lbe-alpro/ is canonical project root
+- PRD.md exists at outer root only, not nested (document gap)
+- Unrelated Ghost AI specs in context/feature-specs/ — untouched

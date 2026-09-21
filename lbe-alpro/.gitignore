@@ -7,10 +7,22 @@ frontend/out/
 backend/bin/
 backend/coverage.out
 
-# Environment
+# Environment (only .env.example is committed)
 .env
 .env.*
+backend/.env
+frontend/.env.local
 !.env.example
+
+# Bruno token environments (tokens never committed)
+bruno/.env*
+bruno/**/token*.bru
+bruno/**/tokens*.json
+
+# Local artifacts
+*.sql
+*.dump
+context/feature-specs/current-issues.md
 
 # OS
 .DS_Store
