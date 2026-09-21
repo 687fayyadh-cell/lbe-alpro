@@ -12,6 +12,8 @@ import (
 	"backend/internal/repository"
 	"backend/internal/service"
 
+	_ "backend/docs"
+
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
