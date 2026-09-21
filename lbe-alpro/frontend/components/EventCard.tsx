@@ -1,10 +1,7 @@
 import Link from "next/link";
+import QuotaBar from "./QuotaBar";
 import StatusBadge from "./StatusBadge";
-import {
-  availabilityOf,
-  formatDeadlineWib,
-  quotaPercent,
-} from "@/lib/format";
+import { availabilityOf, formatDeadlineWib } from "@/lib/format";
 import { CATEGORY_META, EVENT_TYPE_META } from "@/lib/constants";
 import type { Event } from "@/lib/types";
 
@@ -38,24 +35,7 @@ export default function EventCard({ event }: EventCardProps) {
         Batas daftar: {formatDeadlineWib(event.deadline)}
       </p>
       <div className="mt-3">
-        <div
-          className="h-1.5 overflow-hidden rounded-full bg-[var(--border)]"
-          role="progressbar"
-          aria-valuenow={event.currentParticipants}
-          aria-valuemin={0}
-          aria-valuemax={event.quota}
-          aria-label={`Kuota terisi ${event.currentParticipants} dari ${event.quota}`}
-        >
-          <div
-            className="h-full rounded-full bg-[var(--accent)]"
-            style={{
-              width: `${quotaPercent(event.currentParticipants, event.quota)}%`,
-            }}
-          />
-        </div>
-        <p className="mt-1 text-xs text-[var(--faint)]">
-          {event.currentParticipants}/{event.quota} peserta
-        </p>
+        <QuotaBar current={event.currentParticipants} quota={event.quota} />
       </div>
     </article>
   );

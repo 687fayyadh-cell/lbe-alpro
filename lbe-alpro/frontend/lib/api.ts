@@ -163,6 +163,11 @@ export async function getEvent(id: number): Promise<Event> {
   return apiFetch<Event>(`/events/${id}`);
 }
 
+/** Spec alias for the event-detail unit (FE-08). */
+export async function getEventById(id: number): Promise<Event> {
+  return getEvent(id);
+}
+
 export async function registerForEvent(
   eventId: number,
   body: RegisterToEventRequest = {},
