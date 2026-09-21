@@ -5,18 +5,22 @@
 
 import { getToken } from "./auth";
 import {
+  mockCreateEvent,
   mockGetEvent,
   mockGetEvents,
   mockGetMe,
   mockGetMyRegistrations,
+  mockGetOrganizerEvents,
   mockLogin,
   mockRegister,
   mockRegisterForEvent,
+  mockUpdateEvent,
 } from "./mock";
 import type {
   ApiErrorBody,
   ApiResponse,
   AuthResponse,
+  CreateEventRequest,
   Event,
   EventFilters,
   LoginRequest,
@@ -26,6 +30,7 @@ import type {
   RegisterRequest,
   RegisterToEventRequest,
   Registration,
+  UpdateEventRequest,
   User,
 } from "./types";
 import { ApiError } from "./types";
@@ -185,6 +190,29 @@ export async function getMyRegistrations(
   return apiFetchPaginated<Registration>(
     `/registrations/me?page=${page}&limit=${limit}`,
   );
+}
+
+export async function getOrganizerEvents(
+  page = 1,
+  limit = 10,
+): Promise<Paginated<Event>> {
+  if (isMockEnabled()) return mockGetOrganizerEvents(page, limit);
+  return apiFetchPaginated<Event>(
+    `/organizer/events?page=${page}&limit=${limit}`,
+  );
+}
+
+export async function createEvent(body: CreateEventRequest): Promise<Event> {
+  if (isMockEnabled()) return mockCreateEvent(body);
+  return apiFetch<Event>("/events", { method: "POST", body });
+}
+
+export async function updateEvent(
+  id: number,
+  body: UpdateEventRequest,
+): Promise<Event> {
+  if (isMockEnabled()) return mockUpdateEvent(id, body);
+  return apiFetch<Event>(`/events/${id}`, { method: "PUT", body });
 }
 
 export async function registerForEvent(
