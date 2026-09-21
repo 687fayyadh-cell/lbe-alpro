@@ -10,6 +10,7 @@ import type {
   CreateEventRequest,
   Event,
   EventFilters,
+  EventStatus,
   LoginRequest,
   Paginated,
   RegisterRequest,
@@ -521,4 +522,48 @@ export function mockUpdateRegistrationStatus(
   }
   registration.status = status;
   return Promise.resolve(registration);
+}
+
+function requireAdmin() {
+  const user = tokenToUser(getToken());
+  if (user.role !== "admin") {
+    throw new ApiError(
+      "FORBIDDEN",
+      "Hanya admin yang dapat mengakses data ini.",
+      403,
+    );
+  }
+  return user;
+}
+
+export function mockGetModerationEvents(
+  status: EventStatus | undefined,
+  page = 1,
+  limit = 10,
+): Promise<Paginated<Event>> {
+  requireAdmin();
+  const filtered = status
+    ? MOCK_EVENTS.filter((e) => e.status === status)
+    : [...MOCK_EVENTS];
+  const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const safePage = Math.max(page, 1);
+  const start = (safePage - 1) * safeLimit;
+  return Promise.resolve({
+    data: filtered.slice(start, start + safeLimit),
+    meta: { page: safePage, limit: safeLimit, total: filtered.length },
+  });
+}
+
+export function mockUpdateModerationStatus(
+  id: number,
+  status: Extract<EventStatus, "published" | "rejected">,
+): Promise<Event> {
+  requireAdmin();
+  const event = MOCK_EVENTS.find((e) => e.id === id);
+  if (!event) {
+    throw new ApiError("NOT_FOUND", "Event tidak ditemukan.", 404);
+  }
+  event.status = status;
+  event.updatedAt = new Date().toISOString();
+  return Promise.resolve(event);
 }
