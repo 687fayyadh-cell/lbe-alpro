@@ -43,3 +43,20 @@ func (r *UserRepository) Create(user *model.User) error {
 func (r *UserRepository) Update(user *model.User) error {
 	return r.db.Save(user).Error
 }
+
+// List returns all users with pagination.
+func (r *UserRepository) List(page, limit int) ([]model.User, int64, error) {
+	var users []model.User
+	var total int64
+
+	if err := r.db.Model(&model.User{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * limit
+	if err := r.db.Offset(offset).Limit(limit).Order("created_at DESC").Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return users, total, nil
+}

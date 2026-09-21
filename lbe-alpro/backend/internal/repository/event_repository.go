@@ -112,3 +112,22 @@ func (r *EventRepository) ListRegistrants(eventID uint) ([]model.Registration, e
 	}
 	return regs, nil
 }
+
+// ListByStatus returns events filtered by status.
+func (r *EventRepository) ListByStatus(status model.EventStatus, page, limit int) ([]model.Event, int64, error) {
+	var events []model.Event
+	var total int64
+
+	query := r.db.Model(&model.Event{}).Where("status = ?", status)
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * limit
+	if err := query.Offset(offset).Limit(limit).Order("created_at DESC").Find(&events).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return events, total, nil
+}

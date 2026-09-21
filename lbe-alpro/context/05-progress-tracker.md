@@ -7,7 +7,7 @@ Current goal
 G2 done. Ready for G3 (organizer, admin, teams, profile).
 
 In progress
-(none)
+BE-15 (admin event moderation)
 
 Completed
 K-00 baseline, K-01 repo scaffold, K-02 ERD/enums, K-03 contract v1, K-04 CORS, K-05 runbook,

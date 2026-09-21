@@ -53,9 +53,14 @@ func main() {
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret, cfg.JWTExpiresHours)
 	eventService := service.NewEventService(eventRepo)
 	regService := service.NewRegistrationService(regRepo, eventRepo, db)
+	adminService := service.NewAdminService(eventRepo, userRepo, db)
+	teamRepo := repository.NewTeamRepository(db)
+	teamService := service.NewTeamService(teamRepo, db)
 	authHandler := handler.NewAuthHandler(authService)
 	eventHandler := handler.NewEventHandler(eventService)
 	regHandler := handler.NewRegistrationHandler(regService)
+	adminHandler := handler.NewAdminHandler(adminService)
+	teamHandler := handler.NewTeamHandler(teamService)
 
 	router := gin.Default()
 	router.Use(middleware.CORS(cfg.CORSOrigin))
@@ -79,9 +84,7 @@ func main() {
 		v1.POST("/auth/login", authHandler.Login)
 		v1.GET("/events", eventHandler.ListEvents)
 		v1.GET("/events/:id", eventHandler.GetEvent)
-		v1.GET("/teams", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: teams list", "data": []interface{}{}})
-		})
+		v1.GET("/teams", teamHandler.ListTeams)
 
 		// Protected routes (require valid JWT)
 		auth := v1.Group("")
@@ -96,12 +99,8 @@ func main() {
 			student.Use(middleware.RequireRole(model.RoleStudent))
 			{
 				student.POST("/events/:id/register", regHandler.RegisterToEvent)
-				student.POST("/teams", func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: create team"})
-				})
-				student.POST("/teams/:id/join", func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: join team"})
-				})
+				student.POST("/teams", teamHandler.CreateTeam)
+				student.POST("/teams/:id/join", teamHandler.JoinTeam)
 			}
 
 			// Organizer/admin routes
@@ -120,18 +119,10 @@ func main() {
 			admin := auth.Group("")
 			admin.Use(middleware.RequireRole(model.RoleAdmin))
 			{
-				admin.GET("/admin/events", func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: admin events list", "data": []interface{}{}})
-				})
-				admin.PUT("/admin/events/:id/status", func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: admin update event status"})
-				})
-				admin.GET("/admin/users", func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: admin users list", "data": []interface{}{}})
-				})
-				admin.PUT("/admin/users/:id/role", func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: admin update user role"})
-				})
+				admin.GET("/admin/events", adminHandler.ListPendingEvents)
+				admin.PUT("/admin/events/:id/status", adminHandler.UpdateEventStatus)
+				admin.GET("/admin/users", adminHandler.ListUsers)
+				admin.PUT("/admin/users/:id/role", adminHandler.UpdateUserRole)
 			}
 		}
 	}
