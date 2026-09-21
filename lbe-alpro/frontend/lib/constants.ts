@@ -72,3 +72,25 @@ export const KNOWN_ERROR_CODES = [
 ] as const;
 
 export type KnownErrorCode = (typeof KNOWN_ERROR_CODES)[number];
+
+/**
+ * Single reusable error-message map (FE-09). Components must use
+ * friendlyErrorMessage() instead of scattering per-code copy.
+ */
+export const ERROR_MESSAGE_MAP: Record<string, string> = {
+  EVENT_QUOTA_FULL: "Maaf, kuota pendaftaran untuk event ini sudah penuh.",
+  EVENT_DEADLINE_PASSED:
+    "Pendaftaran event ini sudah ditutup karena melewati tenggat waktu.",
+  ALREADY_REGISTERED: "Kamu sudah terdaftar pada event ini.",
+  EVENT_NOT_PUBLISHED: "Event belum dibuka untuk pendaftaran.",
+  EMAIL_TAKEN: "Email sudah terdaftar.",
+  VALIDATION_ERROR: "Data yang dikirim belum valid. Periksa kembali isian.",
+  UNAUTHORIZED: "Sesi berakhir. Silakan masuk ulang.",
+  FORBIDDEN: "Akun Anda tidak memiliki akses untuk aksi ini.",
+  NOT_FOUND: "Data tidak ditemukan.",
+  INTERNAL_ERROR: "Terjadi kesalahan pada server. Silakan coba lagi.",
+};
+
+export function friendlyErrorMessage(code: string, fallback: string): string {
+  return ERROR_MESSAGE_MAP[code] ?? fallback;
+}
