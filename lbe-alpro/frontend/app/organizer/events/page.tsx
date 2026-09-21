@@ -10,6 +10,7 @@ import RequireRole from "@/components/RequireRole";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useAuthErrorRedirect } from "@/hooks/useAuth";
 import { getOrganizerEvents } from "@/lib/api";
+import { takeFlash } from "@/lib/flash";
 import { ApiError } from "@/lib/types";
 import type { Event } from "@/lib/types";
 
@@ -21,6 +22,7 @@ type ListState =
 function OrganizerEventsContent() {
   const router = useRouter();
   const redirectOnUnauthorized = useAuthErrorRedirect();
+  const [notice] = useState<string | null>(() => takeFlash());
   const [state, setState] = useState<ListState>({ status: "loading" });
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -63,6 +65,14 @@ function OrganizerEventsContent() {
           Buat Event
         </Link>
       </div>
+      {notice ? (
+        <p
+          role="status"
+          className="rounded-md border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300"
+        >
+          {notice}
+        </p>
+      ) : null}
       {state.status === "loading" ? (
         <div className="rounded-lg border border-[var(--border)] p-4">
           <Skeleton className="h-6 w-full" />

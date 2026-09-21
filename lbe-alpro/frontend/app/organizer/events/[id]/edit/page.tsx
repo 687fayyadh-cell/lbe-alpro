@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { useAuth, useAuthErrorRedirect } from "@/hooks/useAuth";
 import { getEventById, updateEvent } from "@/lib/api";
 import { friendlyErrorMessage } from "@/lib/constants";
+import { setFlash } from "@/lib/flash";
 import { ApiError } from "@/lib/types";
 import type { CreateEventRequest } from "@/lib/types";
 
@@ -88,6 +89,7 @@ function EditEventContent() {
     setSaveError(null);
     try {
       await updateEvent(state.eventId, values);
+      setFlash("Perubahan event berhasil disimpan.");
       router.push("/organizer/events");
       router.refresh();
     } catch (err) {
