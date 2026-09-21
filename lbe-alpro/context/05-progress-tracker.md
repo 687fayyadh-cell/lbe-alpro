@@ -1,18 +1,18 @@
 Current phase
 
-G1 Foundation + Auth — IN PROGRESS.
+G1 Foundation + Auth — COMPLETE.
 
 Current goal
 
-G0 done, BE-01 through BE-07 complete. Ready for BE-08 (Swagger + Bruno).
+G1 done. Ready for G2 (registration flow).
 
 In progress
-BE-08 (Swagger + Bruno base)
+(none)
 
 Completed
 K-00 baseline, K-01 repo scaffold, K-02 ERD/enums, K-03 contract v1, K-04 CORS, K-05 runbook,
 BE-01 bootstrap, BE-02 models, BE-03 response envelope, BE-04+BE-05 auth+middleware,
-BE-06 seed, BE-07 events read
+BE-06 seed, BE-07 events read, BE-08 Swagger + Bruno
 
 Coming next
 
@@ -310,3 +310,4 @@ BE-04: internal/dto/auth.go, internal/repository/user_repository.go, internal/se
 BE-05: internal/middleware/auth.go (AuthJWT, RequireRole)
 BE-06: internal/config/seed.go (admin, 2 organizers, 2 students, 15 events across 4 bidang + pending/rejected/past-deadline)
 BE-07: internal/repository/event_repository.go, internal/service/event_service.go, internal/handler/event_handler.go
+BE-08: cmd/server/main.go (swagger route, swagger annotations), docs/ (generated), bruno/ (Auth + Events folders, environment)
