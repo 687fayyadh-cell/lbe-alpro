@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import EmptyState from "@/components/EmptyState";
-import ErrorState from "@/components/ErrorState";
+import ErrorState from "@/components/ui/ErrorState";
 import EventDetail from "@/components/EventDetail";
 import RegisterEventModal from "@/components/RegisterEventModal";
-import { Skeleton } from "@/components/Skeleton";
-import { useAuth } from "@/hooks/useAuth";
+import NotFoundState from "@/components/ui/NotFoundState";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { useAuth, useAuthErrorRedirect } from "@/hooks/useAuth";
 import { getEventById } from "@/lib/api";
 import { availabilityOf } from "@/lib/format";
 import { ApiError } from "@/lib/types";
@@ -24,6 +24,7 @@ export default function EventDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
+  const redirectOnUnauthorized = useAuthErrorRedirect();
   const rawId = params.id;
   const eventId = Number(rawId);
   const idValid = Number.isInteger(eventId) && eventId > 0;
@@ -55,6 +56,7 @@ export default function EventDetailPage() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
+        if (redirectOnUnauthorized(err, `/events/${rawId}`)) return;
         if (err instanceof ApiError && err.code === "NOT_FOUND") {
           setState({ status: "not-found" });
           return;
@@ -70,7 +72,7 @@ export default function EventDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [eventId, idValid, reloadKey]);
+  }, [eventId, idValid, rawId, redirectOnUnauthorized, reloadKey]);
 
   function renderAction(event: Event) {
     if (authLoading) {
@@ -171,7 +173,7 @@ export default function EventDetailPage() {
           onRetry={() => setReloadKey((k) => k + 1)}
         />
       ) : state.status === "not-found" ? (
-        <EmptyState
+        <NotFoundState
           title="Event tidak ditemukan"
           description="Event mungkin sudah dihapus atau tautan salah."
           actionLabel="Kembali ke Jelajah"
