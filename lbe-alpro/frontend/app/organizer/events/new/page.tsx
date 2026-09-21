@@ -6,6 +6,7 @@ import EventForm from "@/components/EventForm";
 import RequireRole from "@/components/RequireRole";
 import { createEvent } from "@/lib/api";
 import { friendlyErrorMessage } from "@/lib/constants";
+import { setFlash } from "@/lib/flash";
 import { ApiError } from "@/lib/types";
 import type { CreateEventRequest } from "@/lib/types";
 
@@ -20,6 +21,7 @@ function NewEventContent() {
     setError(null);
     try {
       await createEvent(values);
+      setFlash("Event berhasil dibuat dan menunggu persetujuan admin.");
       router.push("/organizer/events");
       router.refresh();
     } catch (err) {
