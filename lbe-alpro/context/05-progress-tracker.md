@@ -1,19 +1,20 @@
 Current phase
 
-G2 Registration flow — COMPLETE.
+G3 Organizer, Admin, Teams — COMPLETE.
 
 Current goal
 
-G2 done. Ready for G3 (organizer, admin, teams, profile).
+G3 done. Ready for G4 (integration & submission).
 
 In progress
-BE-15 (admin event moderation)
+F-03 (Swagger + Bruno), F-05 (security), F-06 (README)
 
 Completed
 K-00 baseline, K-01 repo scaffold, K-02 ERD/enums, K-03 contract v1, K-04 CORS, K-05 runbook,
 BE-01 bootstrap, BE-02 models, BE-03 response envelope, BE-04+BE-05 auth+middleware,
 BE-06 seed, BE-07 events read, BE-08 Swagger + Bruno,
-BE-09+10 registration flow, BE-11 organizer CRUD, BE-12+13 Bruno failures + Swagger
+BE-09+10 registration flow, BE-11 organizer CRUD, BE-12+13 Bruno failures + Swagger,
+BE-14 registrants, BE-15 admin moderation, BE-16 admin users, BE-17 teams, BE-18 profile
 
 Coming next
 

@@ -1,32 +1,131 @@
-# Ghost AI — AI starter kit (from transcript)
+# SinergiITS
 
-Spec-driven build. Agent reads `AGENTS.md` → `context/00..05` → one `context/feature-specs/*.md` at a time.
+*"Satu Pintu untuk Seluruh Peluang Pengembangan Diri di ITS."*
 
-## New project quickstart
+Platform web full-stack terpusat untuk mahasiswa ITS menemukan dan mendaftar kegiatan pengembangan diri (lomba, bootcamp, oprec, workshop, funmatch, bazar, riset) across 4 bidang pengembangan.
+
+## Problem
+
+1. Informasi kegiatan tersebar di Instagram, WhatsApp, poster — mahasiswa sering melewatkan deadline.
+2. Penyelenggara kesulitan menjangkau audiens lintas departemen dan mengelola pendaftar.
+3. Mahasiswa kesulitan mencari tim untuk lomba/funmatch.
+
+## Goals
+
+1. Direktori event terpusat dengan search + filter.
+2. Pendaftaran event digital dengan validasi kuota dan deadline.
+3. Papan "Cari Tim" untuk lomba/funmatch.
+4. Dashboard penyelenggara untuk mengelola event dan pendaftar.
+5. Moderasi admin agar hanya event verified yang publik.
+
+## Features
+
+| Priority | Feature |
+|---|---|
+| **Must** | Register/Login JWT + RBAC; event directory + search/filter; event detail; event registration (quota/deadline/duplicate); organizer event CRUD; registrant status update; admin event moderation |
+| **Should** | User profile; Teaming Up board (create, list, join); admin user management |
+| **Nice** | CSV export registrants |
+
+## Tech Stack
+
+| Layer | Tech |
+|---|---|
+| Frontend | Next.js (App Router) + TypeScript + Tailwind |
+| Backend | Go + Gin + GORM |
+| Database | PostgreSQL |
+| API | REST, documented with Swagger (swaggo) |
+| Testing | Bruno collection |
+
+## How to Run
+
+### Prerequisites
+
+- Go 1.26+
+- PostgreSQL 14+
+- Node.js 18+ (for frontend)
+
+### Backend
 
 ```bash
-npx create-next-app@latest .  # React+TS+ESLint+Tailwind+App Router
-# clean boilerplate, keep favicon, minimal page.tsx "Ghost AI"
-npm run dev  # localhost:3000
+# 1. Create database
+createdb -U postgres sinergiits
+
+# 2. Setup environment
+cd backend
+cp ../.env.example .env
+# Edit .env with your PostgreSQL password
+
+# 3. Run server
+go run ./cmd/server
+# Server starts on http://localhost:8080
+# Swagger UI at http://localhost:8080/swagger/index.html
 ```
 
-Copy this `ghost-ai/AGENTS.md`, `ghost-ai/context/`, `ghost-ai/.env.example` into the new app root.
-Create accounts: Clerk, Liveblocks, Prisma Postgres, Vercel Blob, Trigger.dev, Google AI Studio.
+### Frontend
 
-## Order
+```bash
+cd frontend
+npm install
+npm run dev
+# Frontend starts on http://localhost:3000
+```
 
-`01-design-system` → `02-editor-shell` → `03-auth` → `04-dialogues` → `05-prisma` → `06-apis` → `07-wire-home` → `08-workspace` → `09-share` → `10-liveblocks` → `11-canvas` → `12-shapes` → `13-18 canvas polish` → `19-presence` → `20-ai-shell` → `21-autosave` → `22-26 design agent` → `27-29 spec gen` → deploy (Vercel, prod keys, `prisma generate` postinstall).
+### Seed Data
 
-## Prompt template per unit
+The backend auto-seeds on first run:
+| Email | Password | Role |
+|---|---|---|
+| admin@sinergiits.its.ac.id | admin123 | admin |
+| organizer@sinergiits.its.ac.id | org123 | organizer |
+| student@sinergiits.its.ac.id | stu123 | student |
 
-`Read context/feature-specs/<nn>-*.md. Update context/05-progress-tracker.md to in-progress, then implement exactly as specified.`
+Plus 15 demo events across 4 categories.
 
-## Gotchas (from transcript)
+## Project Structure
 
-- Next 16: `proxy.ts` not `middleware.ts`.
-- Blob: `access:'private'`, `allowOverwrite:true` for canvas.
-- Liveblocks storage under `flow` key; `onDrop` on outer wrapper, drag sources outside `<ReactFlow>`.
-- Trigger long AI work only; `npx trigger.dev@latest dev` alongside `next dev`.
-- Gemini: use `gemini-2.5-flash` + tool-calling, not `output:object`.
-- `useRealtimeRun`: pass token only when run active.
-- Git: `development` → PR → CodeRabbit → `main`. Gitignore `current-issues.md`, `.env.local`.
+```
+lbe-alpro/
+├── backend/
+│   ├── cmd/server/main.go          # Entry point
+│   ├── internal/
+│   │   ├── config/                 # Env loading, DB connection
+│   │   ├── model/                  # GORM entities + enums
+│   │   ├── repository/             # DB queries only
+│   │   ├── service/                # Business logic + transactions
+│   │   ├── handler/                # HTTP handlers
+│   │   ├── middleware/             # AuthJWT, RequireRole, CORS
+│   │   ├── dto/                    # Request/response structs
+│   │   └── response/               # Envelope helpers
+│   └── docs/                       # Swagger generated
+├── frontend/                       # Next.js
+├── bruno/                          # API collection
+├── context/                        # Project specs
+├── .env.example
+└── README.md
+```
+
+## API Documentation
+
+- **Swagger UI**: http://localhost:8080/swagger/index.html
+- **Bruno Collection**: Import `bruno/` folder into Bruno
+
+### Key Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| POST | /api/v1/auth/register | Register (student) |
+| POST | /api/v1/auth/login | Login → JWT |
+| GET | /api/v1/events | List published events |
+| GET | /api/v1/events/:id | Event detail |
+| POST | /api/v1/events/:id/register | Register to event |
+| POST | /api/v1/events | Create event (organizer) |
+| PUT | /api/v1/admin/events/:id/status | Approve/reject event |
+
+Full list in Swagger UI.
+
+## Architecture
+
+- **Layering**: handler → service → repository → model
+- **Auth**: bcrypt password hash, JWT Bearer tokens, role-based access (student/organizer/admin)
+- **Registration**: DB transaction with row-level lock prevents overbooking
+- **All responses**: standard envelope `{success, message, data}` or `{success:false, error:{code, message}}`
