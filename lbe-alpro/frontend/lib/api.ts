@@ -130,7 +130,7 @@ function toQuery(filters: EventFilters): string {
   return query ? `?${query}` : "";
 }
 
-export function register(body: RegisterRequest): Promise<AuthResponse> {
+export async function register(body: RegisterRequest): Promise<AuthResponse> {
   if (isMockEnabled()) return mockRegister(body);
   return apiFetch<AuthResponse>("/auth/register", {
     method: "POST",
@@ -138,7 +138,7 @@ export function register(body: RegisterRequest): Promise<AuthResponse> {
   });
 }
 
-export function login(body: LoginRequest): Promise<AuthResponse> {
+export async function login(body: LoginRequest): Promise<AuthResponse> {
   if (isMockEnabled()) return mockLogin(body);
   return apiFetch<AuthResponse>("/auth/login", {
     method: "POST",
@@ -146,24 +146,24 @@ export function login(body: LoginRequest): Promise<AuthResponse> {
   });
 }
 
-export function getMe(): Promise<User> {
+export async function getMe(): Promise<User> {
   if (isMockEnabled()) return mockGetMe();
   return apiFetch<User>("/users/me");
 }
 
-export function getEvents(
+export async function getEvents(
   filters: EventFilters = {},
 ): Promise<Paginated<Event>> {
   if (isMockEnabled()) return mockGetEvents(filters);
   return apiFetchPaginated<Event>(`/events${toQuery(filters)}`);
 }
 
-export function getEvent(id: number): Promise<Event> {
+export async function getEvent(id: number): Promise<Event> {
   if (isMockEnabled()) return mockGetEvent(id);
   return apiFetch<Event>(`/events/${id}`);
 }
 
-export function registerForEvent(
+export async function registerForEvent(
   eventId: number,
   body: RegisterToEventRequest = {},
 ): Promise<Registration> {
