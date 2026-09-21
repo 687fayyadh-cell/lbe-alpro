@@ -1,8 +1,7 @@
-// Command server boots the SinergiITS backend (G0 scaffold).
+// Command server boots the SinergiITS backend.
 //
-// It loads environment config, installs CORS, exposes a health probe,
-// and listens on PORT. Routes, database wiring, and auth arrive in
-// later units (BE-01 onward).
+// It loads environment config, connects to PostgreSQL, runs AutoMigrate,
+// installs CORS, exposes a health probe, and listens on PORT.
 package main
 
 import (
@@ -17,6 +16,13 @@ import (
 
 func main() {
 	cfg := config.Load()
+	cfg.Validate()
+
+	db := cfg.ConnectDB()
+
+	// AutoMigrate will be populated as models are added (BE-02).
+	// Example: db.AutoMigrate(&model.User{}, &model.Event{}, ...)
+	_ = db
 
 	router := gin.Default()
 	router.Use(middleware.CORS(cfg.CORSOrigin))
@@ -29,6 +35,7 @@ func main() {
 		})
 	})
 
+	log.Printf("SinergiITS backend starting on :%s", cfg.Port)
 	if err := router.Run(":" + cfg.Port); err != nil {
 		log.Fatalf("server failed to start: %v", err)
 	}

@@ -1,5 +1,5 @@
 // Package config loads backend runtime configuration from environment
-// variables. G0 scaffold: no database connection yet (see BE-01).
+// variables and provides database connectivity.
 package config
 
 import (
@@ -7,6 +7,10 @@ import (
 	"log"
 	"os"
 	"strconv"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 // Config holds all backend runtime settings. Values come from the
@@ -64,4 +68,28 @@ func (c *Config) DSN() string {
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName,
 	)
+}
+
+// Validate fails fast when critical environment variables are missing or
+// insecure. Call this before starting the server.
+func (c *Config) Validate() {
+	if c.JWTSecret == "" || c.JWTSecret == "change-me" {
+		log.Fatal("FATAL: JWT_SECRET must be set to a secure value in .env")
+	}
+	if c.DBHost == "" || c.DBName == "" || c.DBUser == "" {
+		log.Fatal("FATAL: DB_HOST, DB_NAME, and DB_USER must be set in .env")
+	}
+}
+
+// ConnectDB opens a GORM connection to PostgreSQL and returns it.
+// AutoMigrate is not called here; it happens in main after models are wired.
+func (c *Config) ConnectDB() *gorm.DB {
+	db, err := gorm.Open(postgres.Open(c.DSN()), &gorm.Config{
+		Logger:                                   logger.Default.LogMode(logger.Silent),
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
+	if err != nil {
+		log.Fatalf("FATAL: failed to connect to database: %v", err)
+	}
+	return db
 }
