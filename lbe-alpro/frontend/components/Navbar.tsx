@@ -39,7 +39,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
   }, [userMenuOpen]);
 
   const links = [
-    { href: "/", label: "Jelajah" },
+    { href: "/", label: "Jelajah Event" },
     { href: "/teams", label: "Cari Tim" },
   ];
   if (user) {
@@ -58,7 +58,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
         <Link href="/" className="text-lg font-bold">
           SinergiITS
         </Link>
-        <nav aria-label="Navigasi utama" className="hidden items-center gap-5 md:flex">
+        <nav aria-label="Navigasi utama" className="hidden items-center gap-8 md:flex">
           {links.map((link) => (
             <Link
               key={link.href}
