@@ -10,12 +10,14 @@ import {
   mockGetEventRegistrants,
   mockGetEvents,
   mockGetMe,
+  mockGetModerationEvents,
   mockGetMyRegistrations,
   mockGetOrganizerEvents,
   mockLogin,
   mockRegister,
   mockRegisterForEvent,
   mockUpdateEvent,
+  mockUpdateModerationStatus,
   mockUpdateRegistrationStatus,
 } from "./mock";
 import type {
@@ -25,6 +27,7 @@ import type {
   CreateEventRequest,
   Event,
   EventFilters,
+  EventStatus,
   LoginRequest,
   Paginated,
   PaginatedResponse,
@@ -242,6 +245,28 @@ export async function updateRegistrationStatus(
 ): Promise<Registration> {
   if (isMockEnabled()) return mockUpdateRegistrationStatus(id, status);
   return apiFetch<Registration>(`/registrations/${id}/status`, {
+    method: "PUT",
+    body: { status },
+  });
+}
+
+export async function getModerationEvents(
+  status: EventStatus = "pending",
+  page = 1,
+  limit = 10,
+): Promise<Paginated<Event>> {
+  if (isMockEnabled()) return mockGetModerationEvents(status, page, limit);
+  return apiFetchPaginated<Event>(
+    `/admin/events?status=${status}&page=${page}&limit=${limit}`,
+  );
+}
+
+export async function updateModerationStatus(
+  id: number,
+  status: Extract<EventStatus, "published" | "rejected">,
+): Promise<Event> {
+  if (isMockEnabled()) return mockUpdateModerationStatus(id, status);
+  return apiFetch<Event>(`/admin/events/${id}/status`, {
     method: "PUT",
     body: { status },
   });
