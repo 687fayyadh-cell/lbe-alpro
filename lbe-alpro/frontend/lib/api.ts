@@ -4,6 +4,14 @@
 // never fetch directly.
 
 import { getToken } from "./auth";
+import {
+  mockGetEvent,
+  mockGetEvents,
+  mockGetMe,
+  mockLogin,
+  mockRegister,
+  mockRegisterForEvent,
+} from "./mock";
 import type {
   ApiErrorBody,
   ApiResponse,
@@ -31,6 +39,10 @@ function getBaseUrl(): string {
     );
   }
   return baseUrl.replace(/\/$/, "");
+}
+
+function isMockEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_USE_MOCK_API === "true";
 }
 
 interface ApiFetchOptions extends Omit<RequestInit, "body"> {
@@ -119,6 +131,7 @@ function toQuery(filters: EventFilters): string {
 }
 
 export function register(body: RegisterRequest): Promise<AuthResponse> {
+  if (isMockEnabled()) return mockRegister(body);
   return apiFetch<AuthResponse>("/auth/register", {
     method: "POST",
     body,
@@ -126,6 +139,7 @@ export function register(body: RegisterRequest): Promise<AuthResponse> {
 }
 
 export function login(body: LoginRequest): Promise<AuthResponse> {
+  if (isMockEnabled()) return mockLogin(body);
   return apiFetch<AuthResponse>("/auth/login", {
     method: "POST",
     body,
@@ -133,16 +147,19 @@ export function login(body: LoginRequest): Promise<AuthResponse> {
 }
 
 export function getMe(): Promise<User> {
+  if (isMockEnabled()) return mockGetMe();
   return apiFetch<User>("/users/me");
 }
 
 export function getEvents(
   filters: EventFilters = {},
 ): Promise<Paginated<Event>> {
+  if (isMockEnabled()) return mockGetEvents(filters);
   return apiFetchPaginated<Event>(`/events${toQuery(filters)}`);
 }
 
 export function getEvent(id: number): Promise<Event> {
+  if (isMockEnabled()) return mockGetEvent(id);
   return apiFetch<Event>(`/events/${id}`);
 }
 
@@ -150,6 +167,7 @@ export function registerForEvent(
   eventId: number,
   body: RegisterToEventRequest = {},
 ): Promise<Registration> {
+  if (isMockEnabled()) return mockRegisterForEvent(eventId, body);
   return apiFetch<Registration>(`/events/${eventId}/register`, {
     method: "POST",
     body,

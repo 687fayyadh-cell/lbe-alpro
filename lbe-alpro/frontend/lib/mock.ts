@@ -1,0 +1,317 @@
+// SinergiITS mock adapter (FE-03).
+// Used ONLY by lib/api.ts when NEXT_PUBLIC_USE_MOCK_API=true.
+// Same envelopes and error codes as docs/api-contract-v1.md.
+// Components must never import this module directly.
+
+import { getToken } from "./auth";
+import type {
+  AuthResponse,
+  Event,
+  EventFilters,
+  LoginRequest,
+  Paginated,
+  RegisterRequest,
+  RegisterToEventRequest,
+  Registration,
+  User,
+} from "./types";
+import { ApiError } from "./types";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const now = Date.now();
+const future = (days: number): string =>
+  new Date(now + days * DAY_MS).toISOString();
+const past = (days: number): string =>
+  new Date(now - days * DAY_MS).toISOString();
+
+const MOCK_USERS: User[] = [
+  {
+    id: 1,
+    name: "Demo Mahasiswa",
+    email: "demo@student.its.ac.id",
+    role: "student",
+    department: "Teknik Informatika",
+    bio: null,
+    createdAt: past(90),
+    updatedAt: past(90),
+  },
+  {
+    id: 2,
+    name: "Demo Organizer",
+    email: "demo@organizer.its.ac.id",
+    role: "organizer",
+    department: "HMSI",
+    bio: null,
+    createdAt: past(90),
+    updatedAt: past(90),
+  },
+];
+
+const MOCK_EVENTS: Event[] = [
+  {
+    id: 1,
+    organizerId: 2,
+    title: "Lomba Robotika Nasional",
+    category: "keilmiahan",
+    type: "lomba",
+    description: "Kompetisi robot antar mahasiswa.",
+    posterUrl: null,
+    quota: 100,
+    currentParticipants: 42,
+    deadline: future(30),
+    startDate: future(45),
+    endDate: future(47),
+    status: "published",
+    createdAt: past(10),
+    updatedAt: past(10),
+  },
+  {
+    id: 2,
+    organizerId: 2,
+    title: "Funmatch Futsal Antar Departemen",
+    category: "minat_bakat",
+    type: "funmatch",
+    description: "Kuota sudah penuh.",
+    posterUrl: null,
+    quota: 20,
+    currentParticipants: 20,
+    deadline: future(10),
+    startDate: future(12),
+    endDate: future(12),
+    status: "published",
+    createdAt: past(9),
+    updatedAt: past(9),
+  },
+  {
+    id: 3,
+    organizerId: 2,
+    title: "Bootcamp Startup Pemula",
+    category: "kewirausahaan",
+    type: "bootcamp",
+    description: "Pendaftaran sudah ditutup.",
+    posterUrl: null,
+    quota: 50,
+    currentParticipants: 12,
+    deadline: past(1),
+    startDate: past(2),
+    endDate: future(5),
+    status: "published",
+    createdAt: past(20),
+    updatedAt: past(20),
+  },
+  {
+    id: 4,
+    organizerId: 2,
+    title: "Oprec Panitia Schematics",
+    category: "manajerial",
+    type: "oprec",
+    description: "Rekrutmen panitia acara tahunan.",
+    posterUrl: null,
+    quota: 80,
+    currentParticipants: 79,
+    deadline: future(5),
+    startDate: future(7),
+    endDate: future(60),
+    status: "published",
+    createdAt: past(5),
+    updatedAt: past(5),
+  },
+  {
+    id: 5,
+    organizerId: 2,
+    title: "Workshop Riset AI",
+    category: "keilmiahan",
+    type: "workshop",
+    description: "Pelatihan riset machine learning.",
+    posterUrl: null,
+    quota: 40,
+    currentParticipants: 5,
+    deadline: future(20),
+    startDate: future(25),
+    endDate: future(26),
+    status: "published",
+    createdAt: past(3),
+    updatedAt: past(3),
+  },
+  {
+    id: 6,
+    organizerId: 2,
+    title: "Bazar Kewirausahaan (draft)",
+    category: "kewirausahaan",
+    type: "bazar",
+    description: "Belum tayang, menunggu moderasi.",
+    posterUrl: null,
+    quota: 30,
+    currentParticipants: 0,
+    deadline: future(15),
+    startDate: future(18),
+    endDate: future(19),
+    status: "pending",
+    createdAt: past(1),
+    updatedAt: past(1),
+  },
+];
+
+const MOCK_REGISTRATIONS: Registration[] = [
+  {
+    id: 1,
+    eventId: 1,
+    userId: 1,
+    answer: null,
+    attachmentUrl: null,
+    status: "pending",
+    registeredAt: past(2),
+  },
+];
+
+function tokenToUser(token: string | null): User {
+  if (token === "mock-token-student") return MOCK_USERS[0];
+  if (token === "mock-token-organizer") return MOCK_USERS[1];
+  throw new ApiError("UNAUTHORIZED", "Token tidak valid.", 401);
+}
+
+export function mockRegister(body: RegisterRequest): Promise<AuthResponse> {
+  if (!body.name || !body.email || !body.password) {
+    throw new ApiError("VALIDATION_ERROR", "Data pendaftaran belum lengkap.", 400);
+  }
+  if (
+    MOCK_USERS.some((u) => u.email === body.email) ||
+    body.email === "demo@student.its.ac.id"
+  ) {
+    throw new ApiError("EMAIL_TAKEN", "Email sudah terdaftar.", 409);
+  }
+  const user: User = {
+    id: MOCK_USERS.length + 1,
+    name: body.name,
+    email: body.email,
+    role: "student",
+    department: null,
+    bio: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  return Promise.resolve({ token: "mock-token-student", user });
+}
+
+export function mockLogin(body: LoginRequest): Promise<AuthResponse> {
+  if (body.email === "demo@student.its.ac.id") {
+    if (body.password !== "password123") {
+      throw new ApiError("UNAUTHORIZED", "Email atau kata sandi salah.", 401);
+    }
+    return Promise.resolve({ token: "mock-token-student", user: MOCK_USERS[0] });
+  }
+  if (body.email === "demo@organizer.its.ac.id") {
+    if (body.password !== "password123") {
+      throw new ApiError("UNAUTHORIZED", "Email atau kata sandi salah.", 401);
+    }
+    return Promise.resolve({
+      token: "mock-token-organizer",
+      user: MOCK_USERS[1],
+    });
+  }
+  throw new ApiError("UNAUTHORIZED", "Email atau kata sandi salah.", 401);
+}
+
+export function mockGetMe(): Promise<User> {
+  return Promise.resolve(tokenToUser(getToken()));
+}
+
+function isOpen(event: Event): boolean {
+  return (
+    new Date(event.deadline).getTime() >= Date.now() &&
+    event.currentParticipants < event.quota
+  );
+}
+
+export function mockGetEvents(
+  filters: EventFilters = {},
+): Promise<Paginated<Event>> {
+  const limit = Math.min(Math.max(filters.limit ?? 10, 1), 50);
+  const page = Math.max(filters.page ?? 1, 1);
+  const keyword = (filters.q ?? "").trim().toLowerCase();
+
+  const filtered = MOCK_EVENTS.filter((event) => {
+    if (event.status !== "published") return false;
+    if (filters.category && event.category !== filters.category) return false;
+    if (filters.type && event.type !== filters.type) return false;
+    if (filters.status === "open" && !isOpen(event)) return false;
+    if (filters.status === "closed" && isOpen(event)) return false;
+    if (
+      keyword &&
+      !`${event.title} ${event.description}`.toLowerCase().includes(keyword)
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+  const total = filtered.length;
+  const start = (page - 1) * limit;
+  return Promise.resolve({
+    data: filtered.slice(start, start + limit),
+    meta: { page, limit, total },
+  });
+}
+
+export function mockGetEvent(id: number): Promise<Event> {
+  const event = MOCK_EVENTS.find((e) => e.id === id);
+  if (!event) {
+    throw new ApiError("NOT_FOUND", "Event tidak ditemukan.", 404);
+  }
+  return Promise.resolve(event);
+}
+
+export function mockRegisterForEvent(
+  eventId: number,
+  body: RegisterToEventRequest = {},
+): Promise<Registration> {
+  const user = tokenToUser(getToken());
+  const event = MOCK_EVENTS.find((e) => e.id === eventId);
+  if (!event) {
+    throw new ApiError("NOT_FOUND", "Event tidak ditemukan.", 404);
+  }
+  if (event.status !== "published") {
+    throw new ApiError(
+      "EVENT_NOT_PUBLISHED",
+      "Event belum dibuka untuk pendaftaran.",
+      422,
+    );
+  }
+  if (new Date(event.deadline).getTime() < Date.now()) {
+    throw new ApiError(
+      "EVENT_DEADLINE_PASSED",
+      "Batas pendaftaran event ini sudah lewat.",
+      422,
+    );
+  }
+  if (event.currentParticipants >= event.quota) {
+    throw new ApiError(
+      "EVENT_QUOTA_FULL",
+      "Maaf, kuota pendaftaran untuk event ini sudah penuh.",
+      422,
+    );
+  }
+  if (
+    MOCK_REGISTRATIONS.some(
+      (r) => r.eventId === eventId && r.userId === user.id,
+    )
+  ) {
+    throw new ApiError(
+      "ALREADY_REGISTERED",
+      "Anda sudah terdaftar di event ini.",
+      409,
+    );
+  }
+  const registration: Registration = {
+    id: MOCK_REGISTRATIONS.length + 1,
+    eventId,
+    userId: user.id,
+    answer: body.answer ?? null,
+    attachmentUrl: body.attachmentUrl ?? null,
+    status: "pending",
+    registeredAt: new Date().toISOString(),
+  };
+  MOCK_REGISTRATIONS.push(registration);
+  event.currentParticipants += 1;
+  return Promise.resolve(registration);
+}
