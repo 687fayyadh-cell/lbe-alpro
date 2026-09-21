@@ -1,20 +1,21 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
-import EmptyState from "@/components/EmptyState";
-import ErrorState from "@/components/ErrorState";
+import EmptyState from "@/components/ui/EmptyState";
+import ErrorState from "@/components/ui/ErrorState";
 import EventCard from "@/components/EventCard";
 import FilterBar from "@/components/FilterBar";
 import type { FilterValues } from "@/components/FilterBar";
 import Pagination from "@/components/Pagination";
-import { EventCardSkeleton } from "@/components/Skeleton";
+import { EventCardSkeleton } from "@/components/ui/Skeleton";
 import {
   AVAILABILITY_META,
   CATEGORY_META,
   EVENT_TYPE_META,
 } from "@/lib/constants";
 import { getEvents } from "@/lib/api";
+import { useAuthErrorRedirect } from "@/hooks/useAuth";
 import { ApiError } from "@/lib/types";
 import type {
   Event,
@@ -71,7 +72,9 @@ const INITIAL_STATE: ExploreState = {
 
 function ExploreContent() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const redirectOnUnauthorized = useAuthErrorRedirect();
   const [state, setState] = useState<ExploreState>(INITIAL_STATE);
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -96,6 +99,12 @@ function ExploreContent() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
+        const query = searchParams.toString();
+        if (
+          redirectOnUnauthorized(err, query ? `${pathname}?${query}` : pathname)
+        ) {
+          return;
+        }
         setState({
           status: "error",
           events: [],
@@ -109,7 +118,7 @@ function ExploreContent() {
     return () => {
       cancelled = true;
     };
-  }, [url, reloadKey]);
+  }, [url, pathname, searchParams, redirectOnUnauthorized, reloadKey]);
 
   function pushUrl(next: UrlState) {
     const params = new URLSearchParams();

@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import EmptyState from "@/components/EmptyState";
-import ErrorState from "@/components/ErrorState";
+import EmptyState from "@/components/ui/EmptyState";
+import ErrorState from "@/components/ui/ErrorState";
 import RegistrationCard from "@/components/RegistrationCard";
-import { Skeleton } from "@/components/Skeleton";
-import { useAuth } from "@/hooks/useAuth";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { useAuth, useAuthErrorRedirect } from "@/hooks/useAuth";
 import { getEventById, getMyRegistrations } from "@/lib/api";
 import { ApiError } from "@/lib/types";
 import type { Event, Registration } from "@/lib/types";
@@ -24,6 +24,7 @@ type PageState =
 export default function MyRegistrationsPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
+  const redirectOnUnauthorized = useAuthErrorRedirect();
   const [state, setState] = useState<PageState>({ status: "loading" });
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -51,6 +52,7 @@ export default function MyRegistrationsPage() {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
+        if (redirectOnUnauthorized(err, "/my-registrations")) return;
         setState({
           status: "error",
           message:
@@ -62,7 +64,7 @@ export default function MyRegistrationsPage() {
     return () => {
       cancelled = true;
     };
-  }, [authLoading, user, router, reloadKey]);
+  }, [authLoading, user, router, redirectOnUnauthorized, reloadKey]);
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8">

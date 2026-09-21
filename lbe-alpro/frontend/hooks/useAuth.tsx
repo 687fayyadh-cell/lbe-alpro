@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { getMe, login as apiLogin, register as apiRegister } from "@/lib/api";
 import { clearToken, getToken, setToken } from "@/lib/auth";
+import { ApiError } from "@/lib/types";
 import type { LoginRequest, RegisterRequest, User } from "@/lib/types";
 
 interface AuthContextValue {
@@ -109,4 +110,27 @@ export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth harus dipakai di dalam AuthProvider.");
   return ctx;
+}
+
+/**
+ * Shared 401 convention (FE-11): clear token and redirect to login.
+ * Returns true when the error was handled. 403 is rendered as
+ * forbidden state by the caller; other errors show API messages.
+ */
+export function useAuthErrorRedirect() {
+  const router = useRouter();
+  return useCallback(
+    (err: unknown, next: string): boolean => {
+      if (
+        err instanceof ApiError &&
+        (err.code === "UNAUTHORIZED" || err.status === 401)
+      ) {
+        clearToken();
+        router.replace(`/login?next=${encodeURIComponent(next)}`);
+        return true;
+      }
+      return false;
+    },
+    [router],
+  );
 }
