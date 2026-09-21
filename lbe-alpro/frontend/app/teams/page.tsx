@@ -36,6 +36,7 @@ function TeamsContent() {
   const [createOpen, setCreateOpen] = useState(false);
   const [joinTarget, setJoinTarget] = useState<Team | null>(null);
   const [joiningId, setJoiningId] = useState<number | null>(null);
+  const [joinedIds, setJoinedIds] = useState<ReadonlySet<number>>(new Set());
 
   const eventFilter = useMemo(() => {
     const raw = searchParams.get("event_id");
@@ -81,6 +82,7 @@ function TeamsContent() {
     setJoinTarget(null);
     try {
       await joinTeam(team.id);
+      setJoinedIds((prev) => new Set(prev).add(team.id));
       notify("Berhasil bergabung ke tim.");
     } catch (err) {
       notify(
@@ -148,6 +150,7 @@ function TeamsContent() {
               isGuest={isGuest}
               isStudent={isStudent ?? false}
               joining={joiningId === item.team.id}
+              joined={joinedIds.has(item.team.id)}
               onJoin={() => setJoinTarget(item.team)}
             />
           ))}

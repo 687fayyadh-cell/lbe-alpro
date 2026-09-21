@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import Modal from "./Modal";
 import { friendlyErrorMessage } from "@/lib/constants";
+import { formatDeadlineWib } from "@/lib/format";
 import { registerToEvent } from "@/lib/api";
 import { ApiError } from "@/lib/types";
 import type { Event, Registration } from "@/lib/types";
@@ -62,6 +63,10 @@ export default function RegisterEventModal({
       title={`Daftar: ${event.title}`}
       description="Konfirmasi pendaftaran Anda untuk event ini."
     >
+      <p className="rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm text-[var(--faint)]">
+        Sisa kuota {Math.max(0, event.quota - event.currentParticipants)} •{" "}
+        Tutup {formatDeadlineWib(event.deadline)}
+      </p>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         {error ? (
           <div role="alert" className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">

@@ -7,6 +7,7 @@ interface TeamCardProps {
   isGuest: boolean;
   isStudent: boolean;
   joining: boolean;
+  joined: boolean;
   onJoin: () => void;
 }
 
@@ -16,6 +17,7 @@ export default function TeamCard({
   isGuest,
   isStudent,
   joining,
+  joined,
   onJoin,
 }: TeamCardProps) {
   return (
@@ -55,11 +57,11 @@ export default function TeamCard({
         ) : isStudent ? (
           <button
             type="button"
-            disabled={joining}
+            disabled={joining || joined}
             onClick={onJoin}
             className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
           >
-            {joining ? "Bergabung…" : "Gabung Tim"}
+            {joined ? "Sudah bergabung" : joining ? "Bergabung…" : "Gabung Tim"}
           </button>
         ) : (
           <p className="text-sm text-[var(--faint)]">

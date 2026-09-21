@@ -82,6 +82,13 @@ function ExploreContent() {
     () => parseUrl(new URLSearchParams(searchParams.toString())),
     [searchParams],
   );
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const activeFilterCount = [
+    url.category,
+    url.type,
+    url.status,
+    url.query,
+  ].filter(Boolean).length;
 
   useEffect(() => {
     let cancelled = false;
@@ -135,6 +142,10 @@ function ExploreContent() {
     pushUrl({ ...values, page: 1 });
   }
 
+  function resetFilters() {
+    pushUrl({ category: "", type: "", status: "", query: "", page: 1 });
+  }
+
   function onPageChange(page: number) {
     pushUrl({ ...url, page });
   }
@@ -152,10 +163,23 @@ function ExploreContent() {
           aria-label="Filter event"
           className="w-full shrink-0 lg:sticky lg:top-4 lg:w-60"
         >
-          <h2 className="mb-3 text-sm font-semibold text-[var(--faint)]">
+          <button
+            type="button"
+            aria-expanded={filtersOpen}
+            onClick={() => setFiltersOpen((open) => !open)}
+            className="flex w-full items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm font-semibold lg:hidden"
+          >
+            <span>
+              Filter{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+            </span>
+            <span aria-hidden="true">{filtersOpen ? "▾" : "▸"}</span>
+          </button>
+          <h2 className="mb-3 hidden text-sm font-semibold text-[var(--faint)] lg:block">
             Filter
           </h2>
-          <FilterBar values={url} onChange={onFiltersChange} />
+          <div className={`${filtersOpen ? "block" : "hidden"} mt-3 lg:mt-0 lg:block`}>
+            <FilterBar values={url} onChange={onFiltersChange} />
+          </div>
         </aside>
         <div className="flex min-w-0 flex-1 flex-col gap-6">
       {state.status === "error" ? (
@@ -173,9 +197,16 @@ function ExploreContent() {
         <EmptyState
           title="Tidak ada event ditemukan"
           description="Coba ubah filter atau kata kunci pencarian."
+          actionLabel="Atur ulang filter"
+          onAction={resetFilters}
         />
       ) : (
         <>
+          {state.meta ? (
+            <p role="status" className="text-sm text-[var(--faint)]">
+              {state.meta.total} event ditemukan
+            </p>
+          ) : null}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {state.events.map((event) => (
               <EventCard key={event.id} event={event} />

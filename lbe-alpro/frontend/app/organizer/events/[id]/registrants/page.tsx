@@ -32,6 +32,7 @@ type PageState =
 type PendingAction = {
   id: number;
   status: Extract<RegistrationStatus, "approved" | "rejected">;
+  label: string;
 } | null;
 
 function RegistrantsContent() {
@@ -205,9 +206,15 @@ function RegistrantsContent() {
                             type="button"
                             disabled={busy}
                             onClick={() =>
-                              setConfirm({ id: row.registration.id, status: "approved" })
+                              setConfirm({
+                                id: row.registration.id,
+                                status: "approved",
+                                label: row.user
+                                  ? row.user.name
+                                  : `Pengguna #${row.registration.userId}`,
+                              })
                             }
-                            className="underline disabled:opacity-40"
+                            className="py-1 underline disabled:opacity-40"
                           >
                             Setujui
                           </button>
@@ -215,9 +222,15 @@ function RegistrantsContent() {
                             type="button"
                             disabled={busy}
                             onClick={() =>
-                              setConfirm({ id: row.registration.id, status: "rejected" })
+                              setConfirm({
+                                id: row.registration.id,
+                                status: "rejected",
+                                label: row.user
+                                  ? row.user.name
+                                  : `Pengguna #${row.registration.userId}`,
+                              })
                             }
-                            className="underline disabled:opacity-40"
+                            className="py-1 underline disabled:opacity-40"
                           >
                             Tolak
                           </button>
@@ -236,7 +249,11 @@ function RegistrantsContent() {
       <Modal
         open={confirm !== null}
         onClose={() => setConfirm(null)}
-        title={confirm?.status === "approved" ? "Setujui pendaftar?" : "Tolak pendaftar?"}
+        title={
+          confirm?.status === "approved"
+            ? `Setujui ${confirm?.label ?? ""}?`
+            : `Tolak ${confirm?.label ?? ""}?`
+        }
         description={
           confirm?.status === "approved"
             ? "Pendaftar akan ditandai diterima."

@@ -14,15 +14,22 @@ export default function Pagination({
   onPageChange,
 }: PaginationProps) {
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const start = total === 0 ? 0 : (page - 1) * limit + 1;
+  const end = Math.min(page * limit, total);
+  const pageNumbers =
+    totalPages <= 7
+      ? Array.from({ length: totalPages }, (_, i) => i + 1)
+      : [];
   return (
     <nav
       aria-label="Navigasi halaman"
-      className="flex items-center justify-between gap-4"
+      className="flex flex-wrap items-center justify-between gap-4"
     >
       <p className="text-sm text-[var(--faint)]">
-        Halaman {page} dari {totalPages} ({total} event)
+        Menampilkan {start}–{end} dari {total} event • Halaman {page} dari{" "}
+        {totalPages}
       </p>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           disabled={page <= 1}
@@ -31,6 +38,23 @@ export default function Pagination({
         >
           Sebelumnya
         </button>
+        {pageNumbers.map((number) => (
+          <button
+            key={number}
+            type="button"
+            aria-label={`Halaman ${number}`}
+            aria-current={number === page ? "page" : undefined}
+            disabled={number === page}
+            onClick={() => onPageChange(number)}
+            className={`rounded-md border px-3 py-1.5 text-sm disabled:opacity-40 ${
+              number === page
+                ? "border-[var(--accent)] bg-[var(--accent)] text-white"
+                : "border-[var(--border)] bg-[var(--surface)]"
+            }`}
+          >
+            {number}
+          </button>
+        ))}
         <button
           type="button"
           disabled={page >= totalPages}

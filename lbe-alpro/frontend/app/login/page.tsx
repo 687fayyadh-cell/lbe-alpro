@@ -19,6 +19,7 @@ function LoginForm() {
 
   if (isAuthenticated) {
     router.replace(getSafeNext(searchParams.get("next")));
+    return null;
   }
 
   async function onSubmit(e: FormEvent) {

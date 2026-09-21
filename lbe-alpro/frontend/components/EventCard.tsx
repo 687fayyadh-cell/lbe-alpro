@@ -15,6 +15,15 @@ export default function EventCard({ event }: EventCardProps) {
     availability.key === "open" ? "status-open" : "status-closed";
   return (
     <article className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4">
+      {event.posterUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={event.posterUrl}
+          alt=""
+          aria-hidden="true"
+          className="mb-3 h-28 w-full rounded-md object-cover"
+        />
+      ) : null}
       <div className="flex flex-wrap gap-2">
         <StatusBadge
           label={CATEGORY_META[event.category].label}
@@ -27,7 +36,7 @@ export default function EventCard({ event }: EventCardProps) {
         <StatusBadge label={availability.label} tone={tone} />
       </div>
       <Link href={`/events/${event.id}`}>
-        <h2 className="mt-3 text-base font-semibold hover:underline">
+        <h2 className="mt-3 text-[17px] font-semibold hover:underline">
           {event.title}
         </h2>
       </Link>

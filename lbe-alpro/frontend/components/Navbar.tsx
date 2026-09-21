@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import StatusBadge from "./StatusBadge";
 import { ROLE_META } from "@/lib/constants";
@@ -12,8 +13,21 @@ interface NavbarProps {
 }
 
 export default function Navbar({ user, onLogout }: NavbarProps) {
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  function isActive(href: string): boolean {
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
+
+  const linkClass = (href: string): string =>
+    `text-base hover:text-[var(--text)] ${
+      isActive(href)
+        ? "font-medium text-[var(--text)]"
+        : "text-[var(--faint)]"
+    }`;
 
   useEffect(() => {
     if (!userMenuOpen) return;
@@ -25,7 +39,7 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
   }, [userMenuOpen]);
 
   const links = [
-    { href: "/", label: "Jelajah" },
+    { href: "/", label: "Jelajah Event" },
     { href: "/teams", label: "Cari Tim" },
   ];
   if (user) {
@@ -41,15 +55,16 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
   return (
     <header className="border-b border-[var(--border)] bg-[var(--surface)]">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="font-semibold">
+        <Link href="/" className="text-lg font-bold">
           SinergiITS
         </Link>
-        <nav aria-label="Navigasi utama" className="hidden items-center gap-4 md:flex">
+        <nav aria-label="Navigasi utama" className="hidden items-center gap-8 md:flex">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-[var(--faint)] hover:text-[var(--text)]"
+              aria-current={isActive(link.href) ? "page" : undefined}
+              className={linkClass(link.href)}
             >
               {link.label}
             </Link>
@@ -152,8 +167,13 @@ export default function Navbar({ user, onLogout }: NavbarProps) {
               <Link
                 key={link.href}
                 href={link.href}
+                aria-current={isActive(link.href) ? "page" : undefined}
                 onClick={() => setMenuOpen(false)}
-                className="rounded-md px-2 py-2 text-sm hover:bg-[var(--background)]"
+                className={`rounded-md px-2 py-2 text-base hover:bg-[var(--background)] ${
+                  isActive(link.href)
+                    ? "font-medium text-[var(--text)]"
+                    : ""
+                }`}
               >
                 {link.label}
               </Link>
