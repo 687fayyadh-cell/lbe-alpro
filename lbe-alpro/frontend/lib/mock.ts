@@ -243,6 +243,26 @@ export function mockGetMe(): Promise<User> {
   return Promise.resolve(tokenToUser(getToken()));
 }
 
+export function mockUpdateCurrentUser(body: {
+  name?: string;
+  department?: string;
+  bio?: string;
+}): Promise<User> {
+  const user = tokenToUser(getToken());
+  if (body.name !== undefined && !body.name.trim()) {
+    throw new ApiError("VALIDATION_ERROR", "Nama wajib diisi.", 400);
+  }
+  const stored = MOCK_USERS.find((u) => u.id === user.id);
+  if (!stored) {
+    throw new ApiError("NOT_FOUND", "Pengguna tidak ditemukan.", 404);
+  }
+  if (body.name !== undefined) stored.name = body.name.trim();
+  if (body.department !== undefined) stored.department = body.department.trim() || null;
+  if (body.bio !== undefined) stored.bio = body.bio.trim() || null;
+  stored.updatedAt = new Date().toISOString();
+  return Promise.resolve({ ...stored });
+}
+
 function isOpen(event: Event): boolean {
   return (
     new Date(event.deadline).getTime() >= Date.now() &&
