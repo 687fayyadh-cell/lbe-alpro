@@ -53,3 +53,5 @@ Resolve each in the relevant spec (and amend PRD.md) before that unit is impleme
  Home route. PRD lists / as both landing and Explore. Decided in 04-ui-context.md: / is Explore, no marketing landing.
 Session notes
 (versions, gotchas: e.g. Go version, Next.js version, swag init must be re-run after any annotation change, CORS must allow the frontend origin (http://localhost:3000) on the backend, Gin JSON binding errors need mapping to the standard error envelope)
+
+- G0 (branch fe/init-review): contract v1 frozen in docs/api-contract-v1.md; enums slugs (category snake_case, type +riset) with UI labels in frontend/lib/constants.ts; DTOs in frontend/lib/types.ts; auth skeletons frontend/lib/{api,auth}.ts (localStorage MVP, Bearer via apiFetch); runtime FE :3000 / BE :8080 / CORS_ORIGIN http://localhost:3000; .env.example replaced (Ghost AI vars removed); frontend pm = pnpm@11.24.0 (Node v24.21.0). Next.js bundled docs absent in Next 16 (node_modules/next/dist/docs missing) — used standard CLI for smoke. Open human decisions: Ghost AI feature-specs cleanup + outer-root PRD/konteks duplication (see docs/g0-kickoff.md).

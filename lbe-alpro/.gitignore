@@ -15,3 +15,6 @@ backend/coverage.out
 # OS
 .DS_Store
 Thumbs.db
+
+# Local AI working notes (may hold tokens)
+context/feature-specs/current-issues.md
