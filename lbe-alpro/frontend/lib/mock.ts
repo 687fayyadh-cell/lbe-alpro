@@ -4,8 +4,10 @@
 // Components must never import this module directly.
 
 import { getToken } from "./auth";
+import { CATEGORY_META, EVENT_TYPE_META } from "./constants";
 import type {
   AuthResponse,
+  CreateEventRequest,
   Event,
   EventFilters,
   LoginRequest,
@@ -13,6 +15,7 @@ import type {
   RegisterRequest,
   RegisterToEventRequest,
   Registration,
+  UpdateEventRequest,
   User,
 } from "./types";
 import { ApiError } from "./types";
@@ -253,8 +256,7 @@ export function mockGetEvents(
   });
 }
 
-export function mockGetMyRegistrations(
-  page = 1,
+export function mockGetMyRegistrations(  page = 1,
   limit = 10,
 ): Promise<Paginated<Registration>> {
   const user = tokenToUser(getToken());
@@ -329,4 +331,114 @@ export function mockRegisterForEvent(
   MOCK_REGISTRATIONS.push(registration);
   event.currentParticipants += 1;
   return Promise.resolve(registration);
+}
+
+function requireOrganizer() {
+  const user = tokenToUser(getToken());
+  if (user.role !== "organizer" && user.role !== "admin") {
+    throw new ApiError(
+      "FORBIDDEN",
+      "Hanya penyelenggara yang dapat mengakses data ini.",
+      403,
+    );
+  }
+  return user;
+}
+
+export function mockGetOrganizerEvents(
+  page = 1,
+  limit = 10,
+): Promise<Paginated<Event>> {
+  const user = requireOrganizer();
+  const mine =
+    user.role === "admin"
+      ? [...MOCK_EVENTS]
+      : MOCK_EVENTS.filter((e) => e.organizerId === user.id);
+  const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const safePage = Math.max(page, 1);
+  const start = (safePage - 1) * safeLimit;
+  return Promise.resolve({
+    data: mine.slice(start, start + safeLimit),
+    meta: { page: safePage, limit: safeLimit, total: mine.length },
+  });
+}
+
+function validateEventInput(body: CreateEventRequest | UpdateEventRequest) {
+  if (body.title !== undefined && !body.title.trim()) {
+    throw new ApiError("VALIDATION_ERROR", "Judul event wajib diisi.", 400);
+  }
+  if (body.quota !== undefined && (!Number.isInteger(body.quota) || body.quota <= 0)) {
+    throw new ApiError("VALIDATION_ERROR", "Kuota harus bilangan bulat di atas 0.", 400);
+  }
+  if (
+    body.category !== undefined &&
+    !(body.category in CATEGORY_META)
+  ) {
+    throw new ApiError("VALIDATION_ERROR", "Kategori event tidak valid.", 400);
+  }
+  if (body.type !== undefined && !(body.type in EVENT_TYPE_META)) {
+    throw new ApiError("VALIDATION_ERROR", "Tipe event tidak valid.", 400);
+  }
+  if (body.deadline !== undefined && Number.isNaN(Date.parse(body.deadline))) {
+    throw new ApiError("VALIDATION_ERROR", "Tenggat waktu tidak valid.", 400);
+  }
+}
+
+export function mockCreateEvent(body: CreateEventRequest): Promise<Event> {
+  const user = requireOrganizer();
+  validateEventInput(body);
+  if (!body.title?.trim() || body.quota === undefined || !body.deadline) {
+    throw new ApiError("VALIDATION_ERROR", "Judul, kuota, dan tenggat wajib diisi.", 400);
+  }
+  const id = Math.max(...MOCK_EVENTS.map((e) => e.id)) + 1;
+  const timestamp = new Date().toISOString();
+  const event: Event = {
+    id,
+    organizerId: user.id,
+    title: body.title.trim(),
+    category: body.category,
+    type: body.type,
+    description: body.description,
+    posterUrl: body.posterUrl ?? null,
+    quota: body.quota,
+    currentParticipants: 0,
+    deadline: body.deadline,
+    startDate: body.startDate ?? null,
+    endDate: body.endDate ?? null,
+    status: "pending",
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+  MOCK_EVENTS.push(event);
+  return Promise.resolve(event);
+}
+
+export function mockUpdateEvent(
+  id: number,
+  body: UpdateEventRequest,
+): Promise<Event> {
+  const user = requireOrganizer();
+  const event = MOCK_EVENTS.find((e) => e.id === id);
+  if (!event) {
+    throw new ApiError("NOT_FOUND", "Event tidak ditemukan.", 404);
+  }
+  if (event.organizerId !== user.id && user.role !== "admin") {
+    throw new ApiError(
+      "FORBIDDEN",
+      "Anda bukan pemilik event ini.",
+      403,
+    );
+  }
+  validateEventInput(body);
+  if (body.title !== undefined) event.title = body.title.trim();
+  if (body.category !== undefined) event.category = body.category;
+  if (body.type !== undefined) event.type = body.type;
+  if (body.description !== undefined) event.description = body.description;
+  if (body.posterUrl !== undefined) event.posterUrl = body.posterUrl || null;
+  if (body.quota !== undefined) event.quota = body.quota;
+  if (body.deadline !== undefined) event.deadline = body.deadline;
+  if (body.startDate !== undefined) event.startDate = body.startDate || null;
+  if (body.endDate !== undefined) event.endDate = body.endDate || null;
+  event.updatedAt = new Date().toISOString();
+  return Promise.resolve(event);
 }
