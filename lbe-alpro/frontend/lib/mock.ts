@@ -14,6 +14,7 @@ import type {
   Paginated,
   RegisterRequest,
   RegisterToEventRequest,
+  Registrant,
   Registration,
   UpdateEventRequest,
   User,
@@ -47,6 +48,16 @@ const MOCK_USERS: User[] = [
     bio: null,
     createdAt: past(90),
     updatedAt: past(90),
+  },
+  {
+    id: 3,
+    name: "Mahasiswa Kedua",
+    email: "kedua@student.its.ac.id",
+    role: "student",
+    department: "Teknik Elektro",
+    bio: null,
+    createdAt: past(60),
+    updatedAt: past(60),
   },
 ];
 
@@ -164,6 +175,15 @@ const MOCK_REGISTRATIONS: Registration[] = [
     attachmentUrl: null,
     status: "pending",
     registeredAt: past(2),
+  },
+  {
+    id: 2,
+    eventId: 1,
+    userId: 3,
+    answer: "Siap mengikuti seleksi.",
+    attachmentUrl: "https://example.com/berkas.pdf",
+    status: "approved",
+    registeredAt: past(3),
   },
 ];
 
@@ -441,4 +461,64 @@ export function mockUpdateEvent(
   if (body.endDate !== undefined) event.endDate = body.endDate || null;
   event.updatedAt = new Date().toISOString();
   return Promise.resolve(event);
+}
+
+function toRegistrant(registration: Registration): Registrant {
+  const user = MOCK_USERS.find((u) => u.id === registration.userId) ?? null;
+  return {
+    registration,
+    user: user ? { id: user.id, name: user.name, email: user.email } : null,
+  };
+}
+
+function requireEventOwner(eventId: number) {
+  const user = requireOrganizer();
+  const event = MOCK_EVENTS.find((e) => e.id === eventId);
+  if (!event) {
+    throw new ApiError("NOT_FOUND", "Event tidak ditemukan.", 404);
+  }
+  if (event.organizerId !== user.id && user.role !== "admin") {
+    throw new ApiError("FORBIDDEN", "Anda bukan pemilik event ini.", 403);
+  }
+  return { user, event };
+}
+
+export function mockGetEventRegistrants(
+  eventId: number,
+  page = 1,
+  limit = 10,
+): Promise<Paginated<Registrant>> {
+  requireEventOwner(eventId);
+  const rows = MOCK_REGISTRATIONS.filter((r) => r.eventId === eventId).map(
+    toRegistrant,
+  );
+  const safeLimit = Math.min(Math.max(limit, 1), 50);
+  const safePage = Math.max(page, 1);
+  const start = (safePage - 1) * safeLimit;
+  return Promise.resolve({
+    data: rows.slice(start, start + safeLimit),
+    meta: { page: safePage, limit: safeLimit, total: rows.length },
+  });
+}
+
+export function mockUpdateRegistrationStatus(
+  id: number,
+  status: "approved" | "rejected",
+): Promise<Registration> {
+  requireOrganizer();
+  const registration = MOCK_REGISTRATIONS.find((r) => r.id === id);
+  if (!registration) {
+    throw new ApiError("NOT_FOUND", "Pendaftaran tidak ditemukan.", 404);
+  }
+  const { user } = requireEventOwner(registration.eventId);
+  void user;
+  if (registration.status !== "pending") {
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Hanya pendaftaran menunggu yang dapat diubah.",
+      400,
+    );
+  }
+  registration.status = status;
+  return Promise.resolve(registration);
 }

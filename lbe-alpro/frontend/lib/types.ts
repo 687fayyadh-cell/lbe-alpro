@@ -83,6 +83,21 @@ export interface TeamMember {
   joinedAt: string;
 }
 
+/**
+ * Registrant row (FE-14). Mock joins the user snapshot; real BE-14 DTO
+ * pending — api.ts wraps unknown shapes with user: null (see blocker).
+ */
+export interface RegistrantUser {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export interface Registrant {
+  registration: Registration;
+  user: RegistrantUser | null;
+}
+
 export interface PaginationMeta {
   page: number;
   limit: number;
