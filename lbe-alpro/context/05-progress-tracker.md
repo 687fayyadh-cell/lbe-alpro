@@ -1,15 +1,18 @@
 Current phase
 
-G0 Kickoff — COMPLETE.
+G1 Foundation + Auth — IN PROGRESS.
 
 Current goal
 
-G0 done. Ready for BE-01 (backend bootstrap).
+G0 done, BE-01 through BE-07 complete. Ready for BE-08 (Swagger + Bruno).
 
 In progress
-BE-06 (seed), BE-07 (events read)
+BE-08 (Swagger + Bruno base)
+
 Completed
-K-00 baseline, K-01 repo scaffold, K-02 ERD/enums, K-03 contract v1, K-04 CORS, K-05 runbook
+K-00 baseline, K-01 repo scaffold, K-02 ERD/enums, K-03 contract v1, K-04 CORS, K-05 runbook,
+BE-01 bootstrap, BE-02 models, BE-03 response envelope, BE-04+BE-05 auth+middleware,
+BE-06 seed, BE-07 events read
 
 Coming next
 
@@ -290,10 +293,20 @@ Resolve each in the relevant spec (and amend PRD.md) before that unit is impleme
  OPEN: Frontend token storage — localStorage proposed. Confirm at FE-10.
  DECIDED: Home route — / is Explore, no landing page (04-ui-context.md).
 Session notes
-- Go 1.26.1, Gin v1.12.0, GORM v1.31.2
+- Go 1.26.1, Gin v1.12.0, GORM v1.31.2, golang-jwt/v5 v5.3.1
 - swag init must be re-run after any annotation change
 - CORS must allow frontend origin (http://localhost:3000)
 - Gin JSON binding errors need mapping to standard error envelope
 - Repo root: /Users/macbook/lbe-alpro (outer), nested lbe-alpro/ is canonical project root
 - PRD.md exists at outer root only, not nested (document gap)
 - Unrelated Ghost AI specs in context/feature-specs/ — untouched
+
+## Completion log
+
+BE-01: backend/go.mod (direct deps: gin, gorm, pgx, jwt), internal/config/config.go (Validate, ConnectDB), cmd/server/main.go (DB, AutoMigrate)
+BE-02: internal/model/types.go (enums), user.go, event.go, registration.go, team.go
+BE-03: internal/response/response.go (Success/Created/NoContent/Paginated/Error), errors.go (sentinel errors + HandleError)
+BE-04: internal/dto/auth.go, internal/repository/user_repository.go, internal/service/auth_service.go, internal/handler/auth_handler.go
+BE-05: internal/middleware/auth.go (AuthJWT, RequireRole)
+BE-06: internal/config/seed.go (admin, 2 organizers, 2 students, 15 events across 4 bidang + pending/rejected/past-deadline)
+BE-07: internal/repository/event_repository.go, internal/service/event_service.go, internal/handler/event_handler.go
