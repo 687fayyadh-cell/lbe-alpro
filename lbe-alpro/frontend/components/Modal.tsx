@@ -43,7 +43,7 @@ export default function Modal({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative w-full max-w-md rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6"
+        className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6"
       >
         <h2 className="text-lg font-semibold">{title}</h2>
         {description ? (

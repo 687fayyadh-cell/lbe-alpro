@@ -17,7 +17,7 @@ export default function OrganizerEventTable({
 }: OrganizerEventTableProps) {
   return (
     <div className="overflow-x-auto rounded-lg border border-[var(--border)]">
-      <table className="w-full min-w-3xl text-left text-sm">
+      <table className="w-full min-w-[48rem] text-left text-sm">
         <thead className="sticky top-0 bg-[var(--surface)]">
           <tr className="border-b border-[var(--border)]">
             <th scope="col" className="px-4 py-3 font-medium">
