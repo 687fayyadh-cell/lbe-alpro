@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import EmptyState from "@/components/EmptyState";
 import ErrorState from "@/components/ErrorState";
 import EventDetail from "@/components/EventDetail";
+import RegisterEventModal from "@/components/RegisterEventModal";
 import { Skeleton } from "@/components/Skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { getEventById } from "@/lib/api";
@@ -30,8 +31,12 @@ export default function EventDetailPage() {
     idValid ? { status: "loading" } : { status: "not-found" },
   );
   const [trackedId, setTrackedId] = useState(rawId);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [registerOpen, setRegisterOpen] = useState(false);
+  const [justRegistered, setJustRegistered] = useState(false);
   if (trackedId !== rawId) {
     setTrackedId(rawId);
+    setJustRegistered(false);
     const nextId = Number(rawId);
     setState(
       Number.isInteger(nextId) && nextId > 0
@@ -39,8 +44,6 @@ export default function EventDetailPage() {
         : { status: "not-found" },
     );
   }
-  const [reloadKey, setReloadKey] = useState(0);
-  const [registerOpen, setRegisterOpen] = useState(false);
 
   useEffect(() => {
     if (!idValid) return;
@@ -118,6 +121,17 @@ export default function EventDetailPage() {
         </div>
       );
     }
+    if (justRegistered) {
+      return (
+        <button
+          type="button"
+          disabled
+          className="rounded-md bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-white disabled:opacity-40"
+        >
+          Terdaftar
+        </button>
+      );
+    }
     return (
       <div>
         <button
@@ -128,9 +142,15 @@ export default function EventDetailPage() {
           Daftar Sekarang
         </button>
         {registerOpen ? (
-          <p className="mt-2 text-sm text-[var(--faint)]">
-            Formulir pendaftaran hadir di FE-09.
-          </p>
+          <RegisterEventModal
+            event={event}
+            open={registerOpen}
+            onClose={() => setRegisterOpen(false)}
+            onSuccess={() => {
+              setJustRegistered(true);
+              setReloadKey((k) => k + 1);
+            }}
+          />
         ) : null}
       </div>
     );
@@ -160,7 +180,17 @@ export default function EventDetailPage() {
           }}
         />
       ) : (
-        <EventDetail event={state.event} action={renderAction(state.event)} />
+        <>
+          {justRegistered ? (
+            <p
+              role="status"
+              className="mb-4 rounded-md border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300"
+            >
+              Pendaftaran berhasil. Status Anda: Menunggu.
+            </p>
+          ) : null}
+          <EventDetail event={state.event} action={renderAction(state.event)} />
+        </>
       )}
     </main>
   );

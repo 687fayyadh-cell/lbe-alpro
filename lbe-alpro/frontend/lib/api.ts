@@ -168,6 +168,14 @@ export async function getEventById(id: number): Promise<Event> {
   return getEvent(id);
 }
 
+/** Spec alias for the registration unit (FE-09). */
+export async function registerToEvent(
+  eventId: number,
+  body: RegisterToEventRequest = {},
+): Promise<Registration> {
+  return registerForEvent(eventId, body);
+}
+
 export async function registerForEvent(
   eventId: number,
   body: RegisterToEventRequest = {},
