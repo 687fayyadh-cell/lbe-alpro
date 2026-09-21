@@ -36,3 +36,8 @@ type UpdateProfileRequest struct {
 	Department string `json:"department" binding:"omitempty,max=100"`
 	Bio        string `json:"bio" binding:"max=1000"`
 }
+
+// UpdateRegistrationStatusRequest is the request body for PUT /registrations/:id/status.
+type UpdateRegistrationStatusRequest struct {
+	Status string `json:"status" binding:"required,oneof=approved rejected"`
+}

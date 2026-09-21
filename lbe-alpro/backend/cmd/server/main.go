@@ -49,10 +49,13 @@ func main() {
 	// Wire dependencies
 	userRepo := repository.NewUserRepository(db)
 	eventRepo := repository.NewEventRepository(db)
+	regRepo := repository.NewRegistrationRepository(db)
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret, cfg.JWTExpiresHours)
 	eventService := service.NewEventService(eventRepo)
+	regService := service.NewRegistrationService(regRepo, eventRepo, db)
 	authHandler := handler.NewAuthHandler(authService)
 	eventHandler := handler.NewEventHandler(eventService)
+	regHandler := handler.NewRegistrationHandler(regService)
 
 	router := gin.Default()
 	router.Use(middleware.CORS(cfg.CORSOrigin))
@@ -86,17 +89,13 @@ func main() {
 		{
 			auth.GET("/users/me", authHandler.GetMe)
 			auth.PUT("/users/me", authHandler.UpdateMe)
-			auth.GET("/registrations/me", func(c *gin.Context) {
-				c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: my registrations", "data": []interface{}{}})
-			})
+			auth.GET("/registrations/me", regHandler.ListMyRegistrations)
 
 			// Student-only routes
 			student := auth.Group("")
 			student.Use(middleware.RequireRole(model.RoleStudent))
 			{
-				student.POST("/events/:id/register", func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: register to event"})
-				})
+				student.POST("/events/:id/register", regHandler.RegisterToEvent)
 				student.POST("/teams", func(c *gin.Context) {
 					c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: create team"})
 				})
@@ -124,9 +123,7 @@ func main() {
 				organizer.GET("/events/:id/registrants", func(c *gin.Context) {
 					c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: event registrants", "data": []interface{}{}})
 				})
-				organizer.PUT("/registrations/:id/status", func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{"success": true, "message": "TODO: update registration status"})
-				})
+				organizer.PUT("/registrations/:id/status", regHandler.UpdateRegistrationStatus)
 			}
 
 			// Admin-only routes
