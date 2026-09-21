@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -34,10 +35,13 @@ func getenv(key, fallback string) string {
 	return fallback
 }
 
-// Load reads configuration from the environment. It warns (does not fail)
-// when JWT_SECRET is still the insecure placeholder so the G0 scaffold can
-// boot locally; BE-01 enforces fail-fast validation on startup.
+// Load reads configuration from the environment. It loads .env files
+// first, then reads from OS environment.
 func Load() *Config {
+	// Load .env from project root (../.env relative to backend/)
+	godotenv.Load("../.env")
+	godotenv.Load(".env")
+
 	expHours, err := strconv.Atoi(getenv("JWT_EXPIRES_HOURS", "24"))
 	if err != nil || expHours <= 0 {
 		expHours = 24
@@ -53,10 +57,6 @@ func Load() *Config {
 		JWTExpiresHours: expHours,
 		Port:            getenv("PORT", "8080"),
 		CORSOrigin:      getenv("CORS_ORIGIN", "http://localhost:3000"),
-	}
-
-	if cfg.JWTSecret == "" || cfg.JWTSecret == "change-me" {
-		log.Println("WARNING: JWT_SECRET is not set to a secure value; update .env before any real use.")
 	}
 
 	return cfg
