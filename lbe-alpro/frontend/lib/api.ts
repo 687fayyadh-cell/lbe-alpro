@@ -1,21 +1,25 @@
-// SinergiITS HTTP client (G0 skeleton).
-// All API calls must go through apiFetch: base URL from
-// NEXT_PUBLIC_API_URL, Bearer header, standard envelope parsing.
+// SinergiITS HTTP client (FE-02).
+// Single HTTP gateway: base URL from NEXT_PUBLIC_API_URL, Bearer header,
+// standard envelope parsing. Components use the typed methods below,
+// never fetch directly.
 
 import { getToken } from "./auth";
-import type { ApiErrorBody, ApiResponse } from "./types";
-
-export class ApiError extends Error {
-  code: string;
-  status: number;
-
-  constructor(code: string, message: string, status: number) {
-    super(message);
-    this.name = "ApiError";
-    this.code = code;
-    this.status = status;
-  }
-}
+import type {
+  ApiErrorBody,
+  ApiResponse,
+  AuthResponse,
+  Event,
+  EventFilters,
+  LoginRequest,
+  Paginated,
+  PaginatedResponse,
+  PaginationMeta,
+  RegisterRequest,
+  RegisterToEventRequest,
+  Registration,
+  User,
+} from "./types";
+import { ApiError } from "./types";
 
 function getBaseUrl(): string {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -33,6 +37,27 @@ interface ApiFetchOptions extends Omit<RequestInit, "body"> {
   body?: unknown;
 }
 
+async function parseJson(res: Response): Promise<unknown> {
+  try {
+    return await res.json();
+  } catch {
+    throw new ApiError(
+      "INTERNAL_ERROR",
+      "Respons server tidak valid.",
+      res.status,
+    );
+  }
+}
+
+function throwFromErrorPayload(payload: unknown, status: number): never {
+  const err = payload as Partial<ApiErrorBody>;
+  throw new ApiError(
+    err.error?.code ?? "INTERNAL_ERROR",
+    err.error?.message ?? "Terjadi kesalahan pada server.",
+    status,
+  );
+}
+
 export async function apiFetch<T>(
   path: string,
   options: ApiFetchOptions = {},
@@ -48,21 +73,85 @@ export async function apiFetch<T>(
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
   });
 
-  let payload: unknown = null;
-  try {
-    payload = await res.json();
-  } catch {
-    throw new ApiError("INTERNAL_ERROR", "Respons server tidak valid.", res.status);
-  }
-
-  if (!res.ok) {
-    const err = payload as Partial<ApiErrorBody>;
-    throw new ApiError(
-      err.error?.code ?? "INTERNAL_ERROR",
-      err.error?.message ?? "Terjadi kesalahan pada server.",
-      res.status,
-    );
-  }
-
+  const payload = await parseJson(res);
+  if (!res.ok) throwFromErrorPayload(payload, res.status);
   return (payload as ApiResponse<T>).data;
+}
+
+export async function apiFetchPaginated<T>(
+  path: string,
+  options: ApiFetchOptions = {},
+): Promise<Paginated<T>> {
+  const token = getToken();
+  const res = await fetch(`${getBaseUrl()}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
+    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+  });
+
+  const payload = await parseJson(res);
+  if (!res.ok) throwFromErrorPayload(payload, res.status);
+  const page = payload as PaginatedResponse<T>;
+  const meta: PaginationMeta = page.meta ?? {
+    page: 1,
+    limit: Array.isArray(page.data) ? page.data.length : 0,
+    total: Array.isArray(page.data) ? page.data.length : 0,
+  };
+  return { data: page.data, meta };
+}
+
+function toQuery(filters: EventFilters): string {
+  const params = new URLSearchParams();
+  if (filters.category) params.set("category", filters.category);
+  if (filters.type) params.set("type", filters.type);
+  if (filters.status) params.set("status", filters.status);
+  if (filters.q) params.set("q", filters.q);
+  if (filters.page !== undefined)
+    params.set("page", String(filters.page));
+  if (filters.limit !== undefined)
+    params.set("limit", String(filters.limit));
+  const query = params.toString();
+  return query ? `?${query}` : "";
+}
+
+export function register(body: RegisterRequest): Promise<AuthResponse> {
+  return apiFetch<AuthResponse>("/auth/register", {
+    method: "POST",
+    body,
+  });
+}
+
+export function login(body: LoginRequest): Promise<AuthResponse> {
+  return apiFetch<AuthResponse>("/auth/login", {
+    method: "POST",
+    body,
+  });
+}
+
+export function getMe(): Promise<User> {
+  return apiFetch<User>("/users/me");
+}
+
+export function getEvents(
+  filters: EventFilters = {},
+): Promise<Paginated<Event>> {
+  return apiFetchPaginated<Event>(`/events${toQuery(filters)}`);
+}
+
+export function getEvent(id: number): Promise<Event> {
+  return apiFetch<Event>(`/events/${id}`);
+}
+
+export function registerForEvent(
+  eventId: number,
+  body: RegisterToEventRequest = {},
+): Promise<Registration> {
+  return apiFetch<Registration>(`/events/${eventId}/register`, {
+    method: "POST",
+    body,
+  });
 }

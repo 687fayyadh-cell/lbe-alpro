@@ -89,6 +89,25 @@ export interface PaginationMeta {
   total: number;
 }
 
+/** Paged result: list data plus pagination meta. */
+export interface Paginated<T> {
+  data: T[];
+  meta: PaginationMeta;
+}
+
+/** Typed client error parsed from the error envelope. */
+export class ApiError extends Error {
+  code: string;
+  status: number;
+
+  constructor(code: string, message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.code = code;
+    this.status = status;
+  }
+}
+
 export interface ApiResponse<T> {
   success: true;
   message: string;
@@ -129,7 +148,7 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface AuthData {
+export interface AuthResponse {
   token: string;
   user: User;
 }
