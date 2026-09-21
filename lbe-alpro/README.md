@@ -7,48 +7,45 @@ self-development events across 4 bidang (Minat Bakat, Kewirausahaan,
 Manajerial, Keilmiahan). Organizers publish events and manage registrants;
 admins moderate before events go public. Final Project LBE 2026.
 
-> G0 status: frontend smoke setup on `fe/init-review`. Contract frozen in
-> `docs/api-contract-v1.md`. Enum/type reference in `frontend/lib/`.
+> Contract: `docs/api-contract-v1.md` (frozen v1). E2E notes: `docs/g4-e2e.md`.
 
-## Problem
+## Features
 
-1. Event info fragmented across Instagram, WhatsApp groups, posters — students miss deadlines.
-2. Organizers struggle to reach cross-department audiences and manage registrants structurally.
-3. Students struggle to find teammates for lomba/funmatch.
-
-## Features (MoSCoW)
-
-- **Must**: Register/Login JWT + RBAC; event directory + search/filter; event
-  detail; event registration (quota/deadline/duplicate); organizer event CRUD;
-  registrant recap + status update; admin event moderation.
-- **Should**: User profile; Teaming Up board (create, list, join); admin user management.
-- **Nice**: CSV export of registrants; deadline reminders.
+- **Must**: Register/Login JWT + RBAC; event Explore + filter/pagination;
+  event detail + registration (quota/deadline/duplicate); My Registrations;
+  organizer event CRUD + registrants approve/reject; admin moderation.
+- **Should** (implemented, mock-backed until BE ready): Teams board
+  (list/create/join), profile, admin moderation queue.
+- **Deferred**: user-management tab (needs BE-16), portfolio field (needs BE-18).
 
 ## Tech Stack
 
-Next.js (App Router) + TypeScript + Tailwind · Go + Gin + GORM · PostgreSQL ·
-JWT + bcrypt · Swagger (swaggo) · Bruno.
+Next.js 16 (App Router) + TypeScript strict + Tailwind v4 · Go + Gin + GORM ·
+PostgreSQL · JWT (Bearer) + bcrypt · Swagger (swaggo) · Bruno.
 
 ## Prerequisites
 
 - Node.js 20+ and `pnpm@11.24.0` (`npm install -g pnpm@11.24.0`)
-- Go 1.26+ (backend units)
-- PostgreSQL 15+ with a database, e.g. `sinergiits`
+- Go 1.26+ and PostgreSQL 15+ (backend units)
+- Backend seed provides demo student/organizer/admin accounts (see backend docs)
 
 ## Setup
 
 ```bash
 # 1. Frontend env (never commit .env.local)
 cp .env.example frontend/.env.local
-# .env.local needs at minimum:
-# NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
+# Edit frontend/.env.local — values below, placeholders only
 
-# 2. Backend env (from Phase A on; never commit .env)
-# copy DB_*/JWT_*/PORT/CORS_ORIGIN entries from .env.example to backend/.env
-
-# 3. Install frontend deps (canonical manager: pnpm, pnpm-lock.yaml)
+# 2. Install frontend deps (canonical manager: pnpm, pnpm-lock.yaml)
 cd frontend && pnpm install
 ```
+
+### Frontend environment variables
+
+| Variable | Example | Keterangan |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8080/api/v1` | Base URL backend, dibaca saat startup |
+| `NEXT_PUBLIC_USE_MOCK_API` | `false` | `false` = API nyata (default). `true` = mock adapter lokal, dev only |
 
 ## Run
 
@@ -56,7 +53,7 @@ cd frontend && pnpm install
 # Frontend (http://localhost:3000)
 cd frontend && pnpm dev
 
-# Backend (http://localhost:8080, from Phase A on)
+# Backend (http://localhost:8080, tim backend)
 # cd backend && go run ./cmd/server/main.go
 ```
 
@@ -64,29 +61,59 @@ cd frontend && pnpm dev
 |---|---|
 | Frontend | `http://localhost:3000` |
 | Backend API | `http://localhost:8080/api/v1` |
-| Swagger UI | `http://localhost:8080/swagger/index.html` (from first API unit) |
+| Swagger UI | `http://localhost:8080/swagger/index.html` |
 
 ## Verify (frontend)
 
 ```bash
 cd frontend
-pnpm lint        # eslint
-npx tsc --noEmit # typecheck
-pnpm build       # production build
+pnpm build       # production build (setara npm run build)
+pnpm exec tsc --noEmit  # typecheck (setara npx tsc --noEmit)
+pnpm lint        # eslint (setara npm run lint)
 ```
+
+## Mock mode (development only)
+
+```bash
+# frontend/.env.local
+NEXT_PUBLIC_USE_MOCK_API=true
+```
+
+Restart `pnpm dev` after changing env. Mock lives in `frontend/lib/mock.ts`
+and is reachable ONLY via `frontend/lib/api.ts` — pages/components never
+import it. Switching mock OFF changes no component. Never enable mock for
+the final demo without stating it explicitly.
+
+Demo accounts in mock mode: `demo@student.its.ac.id` /
+`demo@organizer.its.ac.id`, password `password123`.
+
+## Routes & roles
+
+| Route | Access |
+|---|---|
+| `/`, `/events/[id]`, `/teams` | Public (daftar/gabung perlu login) |
+| `/login`, `/register` | Guest |
+| `/my-registrations`, `/profile` | Any logged-in role |
+| `/organizer/events…` | organizer, admin |
+| `/admin/moderation` | admin only |
+| `/forbidden` | 403 state |
 
 ## Project structure
 
 ```text
 lbe-alpro/            # canonical app root
-├── frontend/         # Next.js (app/, lib/, components/, hooks/)
-├── backend/          # Go + Gin + GORM (cmd/server, internal/...)
-├── bruno/            # API collection (from first API unit)
+├── frontend/         # Next.js (app/, components/, components/ui/, hooks/, lib/)
+├── backend/          # Go + Gin + GORM (cmd/server, internal/...) — tim backend
+├── bruno/            # API collection — tim backend
 ├── context/          # numbered context + feature-specs/
-├── docs/             # api-contract-v1.md, g0-kickoff.md
+├── docs/             # api-contract-v1.md, g0-kickoff.md, g4-e2e.md
 ├── .env.example
 └── README.md
 ```
+
+Key frontend modules: `lib/api.ts` (sole HTTP gateway), `lib/auth.ts`
+(sole token storage), `lib/types.ts` + `lib/constants.ts` (contract mirror),
+`hooks/useAuth.tsx`, `hooks/useToast.tsx`, `components/ui/` (view states).
 
 ## API docs
 
@@ -95,19 +122,17 @@ lbe-alpro/            # canonical app root
 - Swagger UI: `/swagger/index.html` once backend units land.
 - Bruno collection: `bruno/` once API units land.
 
-## Seed accounts
-
-Default admin/seed accounts will be documented here when the backend seed
-script lands (Phase A). No credentials are ever committed.
-
 ## Troubleshooting
 
-- **Port 3000 in use**: `pnpm dev -- -p 3001`, or free it:
-  `npx kill-port 3000`. Backend CORS origin must then match the actual FE URL.
+- **Port 3000 in use**: `pnpm dev -- -p 3001`, or free it. Backend
+  `CORS_ORIGIN` must then match the actual FE URL.
 - **CORS errors**: backend `CORS_ORIGIN` must equal the FE origin
   (`http://localhost:3000` by default).
-- **`NEXT_PUBLIC_API_URL` missing**: copy `.env.example` → `frontend/.env.local`
-  and restart `pnpm dev` (Next.js reads env at startup).
-- **`pnpm install` slow on Windows**: re-run until it completes; store is reused.
+- **`NEXT_PUBLIC_API_URL` missing**: copy `.env.example` →
+  `frontend/.env.local` and restart `pnpm dev` (Next.js reads env at startup).
 - **API 401 loop**: clear token (`localStorage.removeItem("sinergiits_token")`)
   and re-login; 403 means wrong role, not a login bug.
+- **Backend down**: every data page shows an error state with `Coba lagi` —
+  no blank screens. Check the backend is running on `:8080` first.
+- **Stale `.next` after switching branches**: delete `frontend/.next` and
+  re-run build/typecheck (generated route types are branch-specific).
